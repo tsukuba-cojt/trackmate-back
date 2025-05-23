@@ -1,14 +1,7 @@
 package main
 
-import (
-    "net/http"
-    "github.com/gin-gonic/gin"
-)
+import "fmt"
 
 func main() {
-    r := gin.Default()
-    r.GET("/", func(c *gin.Context) {
-        c.JSON(http.StatusOK, gin.H{"message": "Hello, Gin on Windows!"})
-    })
-    r.Run(":8080") // 8080番ポートで起動
+    fmt.Println("Hello, World!")
 }
