@@ -1,0 +1,10 @@
+{
+  "name": "Go & PostgreSQL",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "forwardPorts": [5432],
+  "postCreateCommand": "go version"
+}
