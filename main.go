@@ -1,10 +1,17 @@
 package main
 
 import (
+	//"net/http"
+	"os"
+	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
+	"github.com/joho/godotenv"
+	//"database/sql"
+	_"github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -14,38 +21,63 @@ type Todo struct {
 	Completed	bool `json:"completed"`
 }
 
-var db *gorm.DB
+var DB *gorm.DB
 
-func initDB() {
-	var err error
-	db, err = gorm.Open(sqlite.Open("todo.db"), &gorm.Config{})
+func ConnectDB() {
+	err := godotenv.Load()
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&Todo{})
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",user, password, host, port, dbname)
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	DB = db
+
+	err = DB.AutoMigrate(&Todo{})
+	if err != nil {
+		log.Fatalf("Failed to auto migrate database: %v", err)
+	}
+	log.Println("Database connected successfully!")
+
 }
 
+
 func createTodo(c *gin.Context) {
-	var todo Todo
-	if err := c.ShouldBindJSON(&todo); err != nil {
+	var Todo Todo
+	if err := c.ShouldBindJSON(&Todo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	db.Create(&todo)
-	c.JSON(http.StatusCreated, todo)
+
+	if result := DB.Create(&Todo); result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, Todo)
 }
+
 
 func getTodos(c *gin.Context) {
 	var todos []Todo
-	db.Find(&todos)
+	DB.Find(&todos)
 	c.JSON(http.StatusOK, todos)
 }
 
 func main() {
 	r := gin.Default()
 
-	initDB()
+	ConnectDB()
 
 	r.POST("/todos", createTodo)
 
