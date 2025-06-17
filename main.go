@@ -13,20 +13,25 @@ import (
 	_"github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"github.com/google/uuid"
 )
 
-type Todo struct {
-	ID		uint	`gorm:"primaryKey" json:"id"`
-	Title	string 	`json:"title"`
-	Completed	bool `json:"completed"`
+type Expense struct {
+	ID uuid.UUID `gorm:"type:char(36);primaryKey"`
+	User string `json:"user"`
+	Amount int `json:"amount"`
+	PaymentMethod string `json:"paymentmethod`
+	Category string `json:"category"`
 }
+
+type 
 
 var DB *gorm.DB
 
 func ConnectDB() {
 	err := godotenv.Load()
 	if err != nil {
-		panic("failed to connect database")
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
 	user := os.Getenv("DB_USER")
@@ -43,7 +48,7 @@ func ConnectDB() {
 	}
 	DB = db
 
-	err = DB.AutoMigrate(&Todo{})
+	err = DB.AutoMigrate(&Expense{})
 	if err != nil {
 		log.Fatalf("Failed to auto migrate database: %v", err)
 	}
@@ -52,26 +57,27 @@ func ConnectDB() {
 }
 
 
-func createTodo(c *gin.Context) {
-	var Todo Todo
-	if err := c.ShouldBindJSON(&Todo); err != nil {
+func createExpenses(c *gin.Context) {
+	var newExpense Expense
+	newExpense.ID = uuid.New()
+	if err := c.ShouldBindJSON(&newExpense); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if result := DB.Create(&Todo); result.Error != nil {
+	if result := DB.Create(&newExpense); result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, Todo)
+	c.JSON(http.StatusCreated, newExpense)
 }
 
 
-func getTodos(c *gin.Context) {
-	var todos []Todo
-	DB.Find(&todos)
-	c.JSON(http.StatusOK, todos)
+func getExpenses(c *gin.Context) {
+	var expenses []Expense
+	DB.Find(&expenses)
+	c.JSON(http.StatusOK, expenses)
 }
 
 func main() {
@@ -79,9 +85,9 @@ func main() {
 
 	ConnectDB()
 
-	r.POST("/todos", createTodo)
+	r.POST("/expenses", createExpenses)
 
-	r.GET("/todos", getTodos)
+	r.GET("/expenses", getExpenses)
 
 	r.Run(":8080")
 }
