@@ -24,7 +24,12 @@ type Expense struct {
 	Category string `json:"category"`
 }
 
-type 
+type Borrow struct {
+	ID uuid.UUID `gorm:"type:char(36);primaryKey"`
+	User string `json:"user"`
+	People string `json:"people"`
+	Amount int `json:"amount"`
+}
 
 var DB *gorm.DB
 
@@ -49,6 +54,10 @@ func ConnectDB() {
 	DB = db
 
 	err = DB.AutoMigrate(&Expense{})
+	if err != nil {
+		log.Fatalf("Failed to auto migrate database: %v", err)
+	}
+	err = DB.AutoMigrate(&Borrow{})
 	if err != nil {
 		log.Fatalf("Failed to auto migrate database: %v", err)
 	}
@@ -80,6 +89,29 @@ func getExpenses(c *gin.Context) {
 	c.JSON(http.StatusOK, expenses)
 }
 
+func createBorrows(c *gin.Context) {
+	var newBorrow Borrow
+	newBorrow.ID = uuid.New()
+	if err := c.ShouldBindJSON(&newBorrow); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if result := DB.Create(&newBorrow); result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, newBorrow)
+}
+
+
+func getBorrows(c *gin.Context) {
+	var borrows []Borrow
+	DB.Find(&borrows)
+	c.JSON(http.StatusOK, borrows)
+}
+
 func main() {
 	r := gin.Default()
 
@@ -88,6 +120,10 @@ func main() {
 	r.POST("/expenses", createExpenses)
 
 	r.GET("/expenses", getExpenses)
+
+	r.POST("/borrow", createBorrows)
+
+	r.GET("/borrow", getExpenses)
 
 	r.Run(":8080")
 }
