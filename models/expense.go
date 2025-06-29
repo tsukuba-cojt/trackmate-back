@@ -1,9 +1,19 @@
 package models
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
 type Expense struct {
-	DbBase
-	User          string `json:"user"`
-	Amount        int    `json:"amount"`
-	PaymentMethod string `json:"paymentmethod`
-	Category      string `json:"category"`
+	ExpenseID         uuid.UUID `gorm:"type:char(36);primaryKey"`
+	UserID            uuid.UUID `gorm:"not null;foreignKey:UserID"`
+	ExpenseCategoryID uuid.UUID `gorm:"not null;foreignKey:ExpenseCategoryID"`
+	ExpenseDate       time.Time
+	ExpenseAmount     int `gorm:"not null"`
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	DeletedAt         gorm.DeletedAt `gorm:"index"`
 }
