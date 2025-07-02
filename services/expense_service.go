@@ -10,7 +10,7 @@ import (
 )
 
 type IExpenseService interface {
-	FindAllExpense() (*[]models.Expense, error)
+	FindAllExpense(userId string) (*[]models.Expense, error)
 	CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error)
 }
 
@@ -22,8 +22,8 @@ func NewExpenseService(repository repositories.IExpenseRepository) IExpenseServi
 	return &ExpenseService{repository: repository}
 }
 
-func (s *ExpenseService) FindAllExpense() (*[]models.Expense, error) {
-	return s.repository.FindAllExpense()
+func (s *ExpenseService) FindAllExpense(userId string) (*[]models.Expense, error) {
+	return s.repository.FindAllExpense(userId)
 }
 
 func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error) {

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"myapp/dto"
+	"myapp/models"
 	"myapp/services"
 	"net/http"
 
@@ -22,7 +23,9 @@ func NewExpenseController(service services.IExpenseService) IExpenseController {
 }
 
 func (c *ExpenseController) FindAllExpense(ctx *gin.Context) {
-	items, err := c.service.FindAllExpense()
+	user := ctx.MustGet("user").(*models.User)
+	userId := user.UserID.String()
+	items, err := c.service.FindAllExpense(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
@@ -37,6 +40,9 @@ func (c *ExpenseController) CreateExpense(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	user := ctx.MustGet("user").(*models.User)
+	input.UserID = user.UserID.String()
 
 	expense, err := c.service.CreateExpense(input)
 	if err != nil {

@@ -19,8 +19,6 @@ func SetupDB() *gorm.DB {
 		os.Getenv("MYSQL_DATABASE"),
 	)
 
-	fmt.Println(dsn)
-
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)

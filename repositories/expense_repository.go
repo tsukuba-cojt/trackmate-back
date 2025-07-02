@@ -8,7 +8,7 @@ import (
 )
 
 type IExpenseRepository interface {
-	FindAllExpense() (*[]models.Expense, error)
+	FindAllExpense(userId string) (*[]models.Expense, error)
 	CreateExpense(expense models.Expense) (*models.Expense, error)
 }
 
@@ -20,9 +20,9 @@ func NewExpenseRepository(db *gorm.DB) IExpenseRepository {
 	return &ExpenseRepository{db: db}
 }
 
-func (r *ExpenseRepository) FindAllExpense() (*[]models.Expense, error) {
+func (r *ExpenseRepository) FindAllExpense(userId string) (*[]models.Expense, error) {
 	var expense []models.Expense
-	result := r.db.Find(&expense)
+	result := r.db.Find(&expense, "user_id = ?", userId)
 	if result.Error != nil {
 		if result.Error.Error() == "record not found" {
 			return nil, errors.New("expense data not found")
