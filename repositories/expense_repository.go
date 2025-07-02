@@ -8,7 +8,8 @@ import (
 )
 
 type IExpenseRepository interface {
-	FindAll() (*[]models.Expense, error)
+	FindAllExpense() (*[]models.Expense, error)
+	CreateExpense(expense models.Expense) (*models.Expense, error)
 }
 
 type ExpenseRepository struct {
@@ -19,7 +20,7 @@ func NewExpenseRepository(db *gorm.DB) IExpenseRepository {
 	return &ExpenseRepository{db: db}
 }
 
-func (r *ExpenseRepository) FindAll() (*[]models.Expense, error) {
+func (r *ExpenseRepository) FindAllExpense() (*[]models.Expense, error) {
 	var expense []models.Expense
 	result := r.db.Find(&expense)
 	if result.Error != nil {
@@ -29,4 +30,12 @@ func (r *ExpenseRepository) FindAll() (*[]models.Expense, error) {
 		return nil, result.Error
 	}
 	return &expense, nil
+}
+
+func (r *ExpenseRepository) CreateExpense(newExpense models.Expense) (*models.Expense, error) {
+	result := r.db.Create(&newExpense)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &newExpense, nil
 }

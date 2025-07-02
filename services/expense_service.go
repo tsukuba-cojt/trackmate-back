@@ -1,12 +1,17 @@
 package services
 
 import (
+	"myapp/dto"
 	"myapp/models"
 	"myapp/repositories"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type IExpenseService interface {
-	FindAll() (*[]models.Expense, error)
+	FindAllExpense() (*[]models.Expense, error)
+	CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error)
 }
 
 type ExpenseService struct {
@@ -17,6 +22,24 @@ func NewExpenseService(repository repositories.IExpenseRepository) IExpenseServi
 	return &ExpenseService{repository: repository}
 }
 
-func (s *ExpenseService) FindAll() (*[]models.Expense, error) {
-	return s.repository.FindAll()
+func (s *ExpenseService) FindAllExpense() (*[]models.Expense, error) {
+	return s.repository.FindAllExpense()
+}
+
+func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error) {
+	newExpenseID := uuid.New()
+	expenseDate, err := time.Parse("2006-01-02", input.ExpenseDate)
+	if err != nil {
+		return nil, err
+	}
+
+	newExpense := models.Expense{
+		ExpenseID:         newExpenseID,
+		UserID:            uuid.MustParse(input.UserID),
+		ExpenseCategoryID: uuid.MustParse(input.ExpenseCategoryID),
+		ExpenseDate:       expenseDate,
+		ExpenseAmount:     input.ExpenseAmount,
+	}
+
+	return s.repository.CreateExpense(newExpense)
 }
