@@ -45,6 +45,7 @@ func main() {
 
 	debtRouterWithAuth := r.Group("/debts", middlewares.AuthMiddleware(authService))
 	debtRouterWithAuth.GET("", debtController.FindAllDebt)
+	debtRouterWithAuth.POST("", debtController.CreateDebt)
 
 	debtPersonRouterWithAuth := r.Group("/debt-persons", middlewares.AuthMiddleware(authService))
 	debtPersonRouterWithAuth.GET("", debtPersonController.FindAllDebtPerson)

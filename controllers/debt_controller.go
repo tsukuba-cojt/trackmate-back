@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"myapp/dto"
+	"myapp/models"
 	"myapp/services"
 	"net/http"
 
@@ -9,6 +11,7 @@ import (
 
 type IDebtController interface {
 	FindAllDebt(ctx *gin.Context)
+	CreateDebt(ctx *gin.Context)
 }
 
 type DebtController struct {
@@ -27,4 +30,23 @@ func (c *DebtController) FindAllDebt(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"data": items})
+}
+
+func (c *DebtController) CreateDebt(ctx *gin.Context) {
+	var input dto.CreateDebtInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user := ctx.MustGet("user").(*models.User)
+	input.UserID = user.UserID.String()
+
+	debt, err := c.service.CreateDebt(input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": debt})
 }
