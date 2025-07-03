@@ -39,6 +39,7 @@ func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Ex
 		ExpenseCategoryID: uuid.MustParse(input.ExpenseCategoryID),
 		ExpenseDate:       expenseDate,
 		ExpenseAmount:     input.ExpenseAmount,
+		Description:       input.Description,
 	}
 
 	return s.repository.CreateExpense(newExpense)

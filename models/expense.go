@@ -13,6 +13,7 @@ type Expense struct {
 	ExpenseCategoryID uuid.UUID `gorm:"not null;foreignKey:ExpenseCategoryID"`
 	ExpenseDate       time.Time
 	ExpenseAmount     int `gorm:"not null"`
+	Description       string
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	DeletedAt         gorm.DeletedAt `gorm:"index"`
