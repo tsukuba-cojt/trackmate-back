@@ -25,6 +25,10 @@ func main() {
 	debtService := services.NewDebtService(debtRepository)
 	debtController := controllers.NewDebtController(debtService)
 
+	debtPersonRepository := repositories.NewDebtPersonRepository(db)
+	debtPersonService := services.NewDebtPersonService(debtPersonRepository)
+	debtPersonController := controllers.NewDebtPersonController(debtPersonService)
+
 	authRepository := repositories.NewAuthRepository(db)
 	authService := services.NewAuthService(authRepository)
 	authController := controllers.NewAuthController(authService)
@@ -41,6 +45,10 @@ func main() {
 
 	debtRouterWithAuth := r.Group("/debts", middlewares.AuthMiddleware(authService))
 	debtRouterWithAuth.GET("", debtController.FindAllDebt)
+
+	debtPersonRouterWithAuth := r.Group("/debt-persons", middlewares.AuthMiddleware(authService))
+	debtPersonRouterWithAuth.GET("", debtPersonController.FindAllDebtPerson)
+	debtPersonRouterWithAuth.POST("", debtPersonController.CreateDebtPerson)
 
 	authRouter := r.Group("/auth")
 	authRouter.POST("/signup", authController.Signup)
