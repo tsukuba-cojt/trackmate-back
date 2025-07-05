@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// データベースの設定・接続を行う関数の定義
 func SetupDB() *gorm.DB {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",

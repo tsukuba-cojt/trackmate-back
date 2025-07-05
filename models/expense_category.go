@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// 支出カテゴリのモデルの定義
 type ExpenseCategory struct {
 	ExpenseCategoryID   uuid.UUID `gorm:"type:char(36);primaryKey"`
 	UserID              uuid.UUID `gorm:"not null;foreignKey:UserID"`

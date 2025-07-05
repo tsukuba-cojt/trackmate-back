@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// ユーザーのモデルの定義
 type User struct {
 	UserID    uuid.UUID `gorm:"type:char(36);primaryKey"`
 	Email     string    `gorm:"not null;unique"`

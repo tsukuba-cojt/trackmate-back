@@ -8,23 +8,28 @@ import (
 	"github.com/google/uuid"
 )
 
+// インターフェースの定義
 type IExpenseCategoryService interface {
 	FindAllExpenseCategory(userId string) (*[]models.ExpenseCategory, error)
 	CreateExpenseCategory(input dto.CreateExpenseCategoryInput) (*models.ExpenseCategory, error)
 }
 
+// サービスの定義
 type ExpenseCategoryService struct {
 	repository repositories.IExpenseCategoryRepository
 }
 
+// コンストラクタの定義
 func NewExpenseCategoryService(repository repositories.IExpenseCategoryRepository) IExpenseCategoryService {
 	return &ExpenseCategoryService{repository: repository}
 }
 
+// ユーザーごとの全ての支出カテゴリを取得する関数の定義
 func (s *ExpenseCategoryService) FindAllExpenseCategory(userId string) (*[]models.ExpenseCategory, error) {
 	return s.repository.FindAllExpenseCategory(userId)
 }
 
+// 支出カテゴリを作成する関数の定義
 func (s *ExpenseCategoryService) CreateExpenseCategory(input dto.CreateExpenseCategoryInput) (*models.ExpenseCategory, error) {
 	newExpenseCategoryID := uuid.New()
 	newExpenseCategory := models.ExpenseCategory{

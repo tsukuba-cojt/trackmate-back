@@ -10,9 +10,11 @@ import (
 )
 
 func main() {
+	// データベースの初期化
 	infra.Initialize()
 	db := infra.SetupDB()
 
+	// マイグレーションの実行
 	err := db.AutoMigrate(&models.Expense{}, &models.Debt{}, &models.User{}, &models.DebtPerson{}, &models.ExpenseCategory{})
 	if err != nil {
 		panic("Failed to migrate database")

@@ -9,19 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// インターフェースの定義
 type IExpenseController interface {
 	FindAllExpense(ctx *gin.Context)
 	CreateExpense(ctx *gin.Context)
 }
 
+// コントローラーの定義
 type ExpenseController struct {
 	service services.IExpenseService
 }
 
+// コンストラクタの定義
 func NewExpenseController(service services.IExpenseService) IExpenseController {
 	return &ExpenseController{service: service}
 }
 
+// ユーザーごとの全ての支出を取得する関数の定義
 func (c *ExpenseController) FindAllExpense(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
@@ -34,6 +38,7 @@ func (c *ExpenseController) FindAllExpense(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": items})
 }
 
+// 支出を作成する関数の定義
 func (c *ExpenseController) CreateExpense(ctx *gin.Context) {
 	var input dto.CreateExpenseInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {

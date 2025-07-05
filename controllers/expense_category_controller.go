@@ -9,19 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// インターフェースの定義
 type IExpenseCategoryController interface {
 	FindAllExpenseCategory(ctx *gin.Context)
 	CreateExpenseCategory(ctx *gin.Context)
 }
 
+// コントローラーの定義
 type ExpenseCategoryController struct {
 	service services.IExpenseCategoryService
 }
 
+// コンストラクタの定義
 func NewExpenseCategoryController(service services.IExpenseCategoryService) IExpenseCategoryController {
 	return &ExpenseCategoryController{service: service}
 }
 
+// ユーザーごとの全ての支出カテゴリを取得する関数の定義
 func (c *ExpenseCategoryController) FindAllExpenseCategory(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
@@ -34,6 +38,7 @@ func (c *ExpenseCategoryController) FindAllExpenseCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": items})
 }
 
+// 支出カテゴリを作成する関数の定義
 func (c *ExpenseCategoryController) CreateExpenseCategory(ctx *gin.Context) {
 	var input dto.CreateExpenseCategoryInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {

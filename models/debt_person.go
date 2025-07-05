@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// 借金の相手のモデルの定義
 type DebtPerson struct {
 	DebtPersonID   uuid.UUID `gorm:"type:char(36);primaryKey"`
 	UserID         uuid.UUID `gorm:"not null;foreignKey:UserID"`

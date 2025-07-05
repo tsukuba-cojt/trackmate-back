@@ -12,20 +12,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// インターフェースの定義
 type IAuthService interface {
 	Signup(email string, password string) error
 	Login(email string, password string) (*string, error)
 	GetUserByToken(tokenstring string) (*models.User, error)
 }
 
+// サービスの定義
 type AuthService struct {
 	repository repositories.IAuthRepository
 }
 
+// コンストラクタの定義
 func NewAuthService(repository repositories.IAuthRepository) IAuthService {
 	return &AuthService{repository: repository}
 }
 
+// ユーザーを作成する関数の定義
 func (s *AuthService) Signup(email string, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -40,6 +44,7 @@ func (s *AuthService) Signup(email string, password string) error {
 	return s.repository.CreateUser(user)
 }
 
+// ユーザーをログインさせる関数の定義
 func (s *AuthService) Login(email string, password string) (*string, error) {
 	foundUser, err := s.repository.FindUser(email)
 	if err != nil {
@@ -57,6 +62,8 @@ func (s *AuthService) Login(email string, password string) (*string, error) {
 	}
 	return token, nil
 }
+
+// トークンを作成する関数の定義
 func CreateToken(userId uuid.UUID, email string) (*string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":   userId.String(),
@@ -71,6 +78,7 @@ func CreateToken(userId uuid.UUID, email string) (*string, error) {
 	return &tokenString, nil
 }
 
+// トークンを使用してユーザーを取得する関数の定義
 func (s *AuthService) GetUserByToken(tokenstring string) (*models.User, error) {
 	token, err := jwt.Parse(tokenstring, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

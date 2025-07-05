@@ -9,23 +9,28 @@ import (
 	"github.com/google/uuid"
 )
 
+// インターフェースの定義
 type IDebtService interface {
 	FindAllDebt() (*[]models.Debt, error)
 	CreateDebt(input dto.CreateDebtInput) (*models.Debt, error)
 }
 
+// サービスの定義
 type DebtService struct {
 	repository repositories.IDebtRepository
 }
 
+// コンストラクタの定義
 func NewDebtService(repository repositories.IDebtRepository) IDebtService {
 	return &DebtService{repository: repository}
 }
 
+// ユーザーごとの全ての借金を取得する関数の定義
 func (s *DebtService) FindAllDebt() (*[]models.Debt, error) {
 	return s.repository.FindAllDebt()
 }
 
+// 借金を作成する関数の定義
 func (s *DebtService) CreateDebt(input dto.CreateDebtInput) (*models.Debt, error) {
 	newDebtID := uuid.New()
 	debtDate, err := time.Parse("2006-01-02", input.DebtDate)

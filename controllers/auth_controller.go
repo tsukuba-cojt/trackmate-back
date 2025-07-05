@@ -8,19 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// インターフェースの定義
 type IAuthController interface {
 	Signup(ctx *gin.Context)
 	Login(ctx *gin.Context)
 }
 
+// コントローラーの定義
 type AuthController struct {
 	service services.IAuthService
 }
 
+// コンストラクタの定義
 func NewAuthController(service services.IAuthService) IAuthController {
 	return &AuthController{service: service}
 }
 
+// ユーザーを作成する関数の定義
 func (c *AuthController) Signup(ctx *gin.Context) {
 	var input dto.SignupInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
@@ -35,6 +39,7 @@ func (c *AuthController) Signup(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
+// ユーザーをログインさせる関数の定義
 func (c *AuthController) Login(ctx *gin.Context) {
 	var input dto.LoginInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {

@@ -9,19 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// インターフェースの定義
 type IDebtPersonController interface {
 	FindAllDebtPerson(ctx *gin.Context)
 	CreateDebtPerson(ctx *gin.Context)
 }
 
+// コントローラーの定義
 type DebtPersonController struct {
 	service services.IDebtPersonService
 }
 
+// コンストラクタの定義
 func NewDebtPersonController(service services.IDebtPersonService) IDebtPersonController {
 	return &DebtPersonController{service: service}
 }
 
+// ユーザーごとの全ての借金の相手を取得する関数の定義
 func (c *DebtPersonController) FindAllDebtPerson(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
@@ -34,6 +38,7 @@ func (c *DebtPersonController) FindAllDebtPerson(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": items})
 }
 
+// 借金の相手を作成する関数の定義
 func (c *DebtPersonController) CreateDebtPerson(ctx *gin.Context) {
 	var input dto.CreateDebtPersonInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
