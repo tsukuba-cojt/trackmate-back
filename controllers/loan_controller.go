@@ -10,24 +10,24 @@ import (
 )
 
 // インターフェースの定義
-type IDebtController interface {
-	FindAllDebt(ctx *gin.Context)
-	CreateDebt(ctx *gin.Context)
+type ILoanController interface {
+	FindAllLoan(ctx *gin.Context)
+	CreateLoan(ctx *gin.Context)
 }
 
 // コントローラーの定義
-type DebtController struct {
-	service services.IDebtService
+type LoanController struct {
+	service services.ILoanService
 }
 
 // コンストラクタの定義
-func NewDebtController(service services.IDebtService) IDebtController {
-	return &DebtController{service: service}
+func NewLoanController(service services.ILoanService) ILoanController {
+	return &LoanController{service: service}
 }
 
 // ユーザーごとの全ての借金を取得する関数の定義
-func (c *DebtController) FindAllDebt(ctx *gin.Context) {
-	items, err := c.service.FindAllDebt()
+func (c *LoanController) FindAllLoan(ctx *gin.Context) {
+	items, err := c.service.FindAllLoan()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
@@ -37,8 +37,8 @@ func (c *DebtController) FindAllDebt(ctx *gin.Context) {
 }
 
 // 借金を作成する関数の定義
-func (c *DebtController) CreateDebt(ctx *gin.Context) {
-	var input dto.CreateDebtInput
+func (c *LoanController) CreateLoan(ctx *gin.Context) {
+	var input dto.CreateLoanInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -47,11 +47,11 @@ func (c *DebtController) CreateDebt(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
 
-	debt, err := c.service.CreateDebt(input)
+	loan, err := c.service.CreateLoan(input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": debt})
+	ctx.JSON(http.StatusOK, gin.H{"data": loan})
 }

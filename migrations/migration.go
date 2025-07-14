@@ -15,7 +15,7 @@ func main() {
 	db := infra.SetupDB()
 
 	// マイグレーションの実行
-	err := db.AutoMigrate(&models.Expense{}, &models.Debt{}, &models.User{}, &models.DebtPerson{}, &models.ExpenseCategory{})
+	err := db.AutoMigrate(&models.Expense{}, &models.Loan{}, &models.User{}, &models.LoanPartner{}, &models.ExpenseCategory{})
 	if err != nil {
 		panic("Failed to migrate database")
 	}

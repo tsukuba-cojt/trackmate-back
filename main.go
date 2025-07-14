@@ -27,14 +27,14 @@ func main() {
 	expenseCategoryController := controllers.NewExpenseCategoryController(expenseCategoryService)
 
 	// 借金のリポジトリ、サービス、コントローラーの初期化
-	debtRepository := repositories.NewDebtRepository(db)
-	debtService := services.NewDebtService(debtRepository)
-	debtController := controllers.NewDebtController(debtService)
+	loanRepository := repositories.NewLoanRepository(db)
+	loanService := services.NewLoanService(loanRepository)
+	loanController := controllers.NewLoanController(loanService)
 
 	// 借金の人のリポジトリ、サービス、コントローラーの初期化
-	debtPersonRepository := repositories.NewDebtPersonRepository(db)
-	debtPersonService := services.NewDebtPersonService(debtPersonRepository)
-	debtPersonController := controllers.NewDebtPersonController(debtPersonService)
+	loanPartnerRepository := repositories.NewLoanPartnerRepository(db)
+	loanPartnerService := services.NewLoanPartnerService(loanPartnerRepository)
+	loanPartnerController := controllers.NewLoanPartnerController(loanPartnerService)
 
 	// 認証のリポジトリ、サービス、コントローラーの初期化
 	authRepository := repositories.NewAuthRepository(db)
@@ -55,14 +55,14 @@ func main() {
 	expenseCategoryRouterWithAuth.POST("", expenseCategoryController.CreateExpenseCategory)
 
 	// 借金のルーティング
-	debtRouterWithAuth := r.Group("/debts", middlewares.AuthMiddleware(authService))
-	debtRouterWithAuth.GET("", debtController.FindAllDebt)
-	debtRouterWithAuth.POST("", debtController.CreateDebt)
+	loanRouterWithAuth := r.Group("/loans", middlewares.AuthMiddleware(authService))
+	loanRouterWithAuth.GET("", loanController.FindAllLoan)
+	loanRouterWithAuth.POST("", loanController.CreateLoan)
 
 	// 借金の人のルーティング
-	debtPersonRouterWithAuth := r.Group("/debt-persons", middlewares.AuthMiddleware(authService))
-	debtPersonRouterWithAuth.GET("", debtPersonController.FindAllDebtPerson)
-	debtPersonRouterWithAuth.POST("", debtPersonController.CreateDebtPerson)
+	loanPartnerRouterWithAuth := r.Group("/loan-partners", middlewares.AuthMiddleware(authService))
+	loanPartnerRouterWithAuth.GET("", loanPartnerController.FindAllLoanPartner)
+	loanPartnerRouterWithAuth.POST("", loanPartnerController.CreateLoanPartner)
 
 	// 認証のルーティング
 	authRouter := r.Group("/auth")
