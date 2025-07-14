@@ -50,17 +50,17 @@ func main() {
 	expenseRouterWithAuth.POST("", expenseController.CreateExpense)
 
 	// 支出カテゴリのルーティング
-	expenseCategoryRouterWithAuth := r.Group("/expense-categories", middlewares.AuthMiddleware(authService))
+	expenseCategoryRouterWithAuth := r.Group("/categories", middlewares.AuthMiddleware(authService))
 	expenseCategoryRouterWithAuth.GET("", expenseCategoryController.FindAllExpenseCategory)
 	expenseCategoryRouterWithAuth.POST("", expenseCategoryController.CreateExpenseCategory)
 
 	// 借金のルーティング
-	loanRouterWithAuth := r.Group("/loans", middlewares.AuthMiddleware(authService))
+	loanRouterWithAuth := r.Group("/loan", middlewares.AuthMiddleware(authService))
 	loanRouterWithAuth.GET("", loanController.FindAllLoan)
 	loanRouterWithAuth.POST("", loanController.CreateLoan)
 
 	// 借金の人のルーティング
-	loanPartnerRouterWithAuth := r.Group("/loan-partners", middlewares.AuthMiddleware(authService))
+	loanPartnerRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
 	loanPartnerRouterWithAuth.GET("", loanPartnerController.FindAllLoanPartner)
 	loanPartnerRouterWithAuth.POST("", loanPartnerController.CreateLoanPartner)
 
