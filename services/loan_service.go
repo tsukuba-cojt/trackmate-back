@@ -39,12 +39,12 @@ func (s *LoanService) CreateLoan(input dto.CreateLoanInput) (*models.Loan, error
 	}
 
 	newLoan := models.Loan{
-		LoanID:        newDebtID,
-		UserID:        uuid.MustParse(input.UserID),
-		LoanPartnerID: uuid.MustParse(input.LoanPartnerID),
-		IsDebt:        input.IsDebt,
-		LoanDate:      loanDate,
-		LoanAmount:    input.LoanAmount,
+		LoanID:       newDebtID,
+		UserID:       uuid.MustParse(input.UserID),
+		LoanPersonID: uuid.MustParse(input.LoanPersonID),
+		IsDebt:       input.IsDebt,
+		LoanDate:     loanDate,
+		LoanAmount:   input.LoanAmount,
 	}
 
 	return s.repository.CreateLoan(newLoan)

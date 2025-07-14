@@ -40,7 +40,7 @@ func (c *LoanPartnerController) FindAllLoanPartner(ctx *gin.Context) {
 
 // 借金の相手を作成する関数の定義
 func (c *LoanPartnerController) CreateLoanPartner(ctx *gin.Context) {
-	var input dto.CreateLoanPartnerInput
+	var input dto.CreateLoanPersonInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
