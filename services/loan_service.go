@@ -1,0 +1,51 @@
+package services
+
+import (
+	"myapp/dto"
+	"myapp/models"
+	"myapp/repositories"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// インターフェースの定義
+type ILoanService interface {
+	FindAllLoan() (*[]models.Loan, error)
+	CreateLoan(input dto.CreateLoanInput) (*models.Loan, error)
+}
+
+// サービスの定義
+type LoanService struct {
+	repository repositories.ILoanRepository
+}
+
+// コンストラクタの定義
+func NewLoanService(repository repositories.ILoanRepository) ILoanService {
+	return &LoanService{repository: repository}
+}
+
+// ユーザーごとの全ての借金を取得する関数の定義
+func (s *LoanService) FindAllLoan() (*[]models.Loan, error) {
+	return s.repository.FindAllLoan()
+}
+
+// 借金を作成する関数の定義
+func (s *LoanService) CreateLoan(input dto.CreateLoanInput) (*models.Loan, error) {
+	newDebtID := uuid.New()
+	loanDate, err := time.Parse("2006-01-02", input.LoanDate)
+	if err != nil {
+		return nil, err
+	}
+
+	newLoan := models.Loan{
+		LoanID:        newDebtID,
+		UserID:        uuid.MustParse(input.UserID),
+		LoanPartnerID: uuid.MustParse(input.LoanPartnerID),
+		IsDebt:        input.IsDebt,
+		LoanDate:      loanDate,
+		LoanAmount:    input.LoanAmount,
+	}
+
+	return s.repository.CreateLoan(newLoan)
+}

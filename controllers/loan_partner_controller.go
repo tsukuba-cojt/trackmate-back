@@ -10,26 +10,26 @@ import (
 )
 
 // インターフェースの定義
-type IDebtPersonController interface {
-	FindAllDebtPerson(ctx *gin.Context)
-	CreateDebtPerson(ctx *gin.Context)
+type ILoanPartnerController interface {
+	FindAllLoanPartner(ctx *gin.Context)
+	CreateLoanPartner(ctx *gin.Context)
 }
 
 // コントローラーの定義
-type DebtPersonController struct {
-	service services.IDebtPersonService
+type LoanPartnerController struct {
+	service services.ILoanPartnerService
 }
 
 // コンストラクタの定義
-func NewDebtPersonController(service services.IDebtPersonService) IDebtPersonController {
-	return &DebtPersonController{service: service}
+func NewLoanPartnerController(service services.ILoanPartnerService) ILoanPartnerController {
+	return &LoanPartnerController{service: service}
 }
 
 // ユーザーごとの全ての借金の相手を取得する関数の定義
-func (c *DebtPersonController) FindAllDebtPerson(ctx *gin.Context) {
+func (c *LoanPartnerController) FindAllLoanPartner(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
-	items, err := c.service.FindAllDebtPerson(userId)
+	items, err := c.service.FindAllLoanPartner(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
@@ -39,8 +39,8 @@ func (c *DebtPersonController) FindAllDebtPerson(ctx *gin.Context) {
 }
 
 // 借金の相手を作成する関数の定義
-func (c *DebtPersonController) CreateDebtPerson(ctx *gin.Context) {
-	var input dto.CreateDebtPersonInput
+func (c *LoanPartnerController) CreateLoanPartner(ctx *gin.Context) {
+	var input dto.CreateLoanPartnerInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -49,11 +49,11 @@ func (c *DebtPersonController) CreateDebtPerson(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
 
-	debtPerson, err := c.service.CreateDebtPerson(input)
+	loanPartner, err := c.service.CreateLoanPartner(input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": debtPerson})
+	ctx.JSON(http.StatusOK, gin.H{"data": loanPartner})
 }
