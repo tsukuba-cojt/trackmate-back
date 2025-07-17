@@ -50,13 +50,13 @@ func (c *ExpenseCategoryController) CreateExpenseCategory(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
 
-	expenseCategory, err := c.service.CreateExpenseCategory(input)
+	_, err := c.service.CreateExpenseCategory(input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": expenseCategory})
+	ctx.Status(http.StatusOK)
 }
 
 func (c *ExpenseCategoryController) DeleteExpenseCategory(ctx *gin.Context) {
@@ -83,4 +83,5 @@ func (c *ExpenseCategoryController) DeleteExpenseCategory(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
 	}
+	ctx.Status(http.StatusOK)
 }
