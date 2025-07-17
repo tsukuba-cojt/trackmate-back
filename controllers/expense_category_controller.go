@@ -11,8 +11,9 @@ import (
 
 // インターフェースの定義
 type IExpenseCategoryController interface {
-	GetExpenseCategory(ctx *gin.Context)
+	GetExpenseCategorySummary(ctx *gin.Context)
 	CreateExpenseCategory(ctx *gin.Context)
+	DeleteExpenseCategory(ctx *gin.Context)
 }
 
 // コントローラーの定義
@@ -26,10 +27,10 @@ func NewExpenseCategoryController(service services.IExpenseCategoryService) IExp
 }
 
 // ユーザーごとの全ての支出カテゴリを取得する関数の定義
-func (c *ExpenseCategoryController) GETExpenseCategory(ctx *gin.Context) {
+func (c *ExpenseCategoryController) GetExpenseCategorySummary(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
-	items, err := c.service.FindAllExpenseCategory(userId)
+	items, err := c.service.GetExpenseCategorySummary(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
@@ -42,7 +43,7 @@ func (c *ExpenseCategoryController) GETExpenseCategory(ctx *gin.Context) {
 func (c *ExpenseCategoryController) CreateExpenseCategory(ctx *gin.Context) {
 	var input dto.CreateExpenseCategoryInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request"})
 		return
 	}
 
@@ -51,9 +52,35 @@ func (c *ExpenseCategoryController) CreateExpenseCategory(ctx *gin.Context) {
 
 	expenseCategory, err := c.service.CreateExpenseCategory(input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"data": expenseCategory})
+}
+
+func (c *ExpenseCategoryController) DeleteExpenseCategory(ctx *gin.Context) {
+	user := ctx.MustGet("user").(*models.User)
+	userId := user.UserID.String()
+
+	var input dto.DeleteExpenseCategoryInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request"})
+		return
+	}
+
+	err := c.service.DeleteExpenseCategory(userId, input.ExpenseCategoryID)
+	if err != nil {
+		if err.Error() == "expense category not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Expense category not found"})
+			return
+		}
+		if err.Error() == "category is referenced by expenses" {
+			ctx.JSON(http.StatusConflict, gin.H{"error": "Category is referenced by expenses"})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
+		return
+	}
 }
