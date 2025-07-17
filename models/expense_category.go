@@ -11,7 +11,7 @@ import (
 type ExpenseCategory struct {
 	ExpenseCategoryID   uuid.UUID `gorm:"type:char(36);primaryKey;unique"`
 	UserID              uuid.UUID `gorm:"not null;foreignKey:UserID"`
-	ExpenseCategoryName string    `gorm:"not null"`
+	ExpenseCategoryName string    `gorm:"not null;unique"`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	DeletedAt           gorm.DeletedAt `gorm:"index"`
