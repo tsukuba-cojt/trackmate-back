@@ -11,7 +11,7 @@ import (
 
 // インターフェースの定義
 type IExpenseCategoryController interface {
-	FindAllExpenseCategory(ctx *gin.Context)
+	GetExpenseCategory(ctx *gin.Context)
 	CreateExpenseCategory(ctx *gin.Context)
 }
 
@@ -26,7 +26,7 @@ func NewExpenseCategoryController(service services.IExpenseCategoryService) IExp
 }
 
 // ユーザーごとの全ての支出カテゴリを取得する関数の定義
-func (c *ExpenseCategoryController) FindAllExpenseCategory(ctx *gin.Context) {
+func (c *ExpenseCategoryController) GETExpenseCategory(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
 	items, err := c.service.FindAllExpenseCategory(userId)

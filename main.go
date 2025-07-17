@@ -32,9 +32,9 @@ func main() {
 	loanController := controllers.NewLoanController(loanService)
 
 	// 借金の人のリポジトリ、サービス、コントローラーの初期化
-	loanPartnerRepository := repositories.NewLoanPartnerRepository(db)
-	loanPartnerService := services.NewLoanPartnerService(loanPartnerRepository)
-	loanPartnerController := controllers.NewLoanPartnerController(loanPartnerService)
+	loanPersonRepository := repositories.NewLoanPersonRepository(db)
+	loanPersonService := services.NewLoanPersonService(loanPersonRepository)
+	loanPersonController := controllers.NewLoanPersonController(loanPersonService)
 
 	// 認証のリポジトリ、サービス、コントローラーの初期化
 	authRepository := repositories.NewAuthRepository(db)
@@ -60,9 +60,9 @@ func main() {
 	loanRouterWithAuth.POST("", loanController.CreateLoan)
 
 	// 借金の人のルーティング
-	loanPartnerRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
-	loanPartnerRouterWithAuth.GET("", loanPartnerController.FindAllLoanPartner)
-	loanPartnerRouterWithAuth.POST("", loanPartnerController.CreateLoanPartner)
+	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
+	loanPersonRouterWithAuth.GET("", loanPersonController.FindAllLoanPerson)
+	loanPersonRouterWithAuth.POST("", loanPersonController.CreateLoanPerson)
 
 	// 認証のルーティング
 	authRouter := r.Group("/auth")

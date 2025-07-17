@@ -25,7 +25,10 @@ func NewExpenseCategoryService(repository repositories.IExpenseCategoryRepositor
 }
 
 // ユーザーごとの全ての支出カテゴリを取得する関数の定義
-func (s *ExpenseCategoryService) FindAllExpenseCategory(userId string) (*[]models.ExpenseCategory, error) {
+func (s *ExpenseCategoryService) GetExpenseCategory(userId string) (*[]models.ExpenseCategory, error) {
+	response := []dto.ExpenseCategorySummaryResponse{}
+
+	
 	return s.repository.FindAllExpenseCategory(userId)
 }
 
