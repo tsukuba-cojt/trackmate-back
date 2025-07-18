@@ -82,5 +82,5 @@ func main() {
 	authRouter.POST("/login", authController.Login)
 
 	// サーバーの起動
-	r.Run(":8080")
+	r.Run(":8000")
 }
