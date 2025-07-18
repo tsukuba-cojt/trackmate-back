@@ -31,11 +31,11 @@ func (s *LoanService) GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse,
 }
 
 // 借金を作成する関数の定義
-func (s *LoanService) CreateLoan(input dto.CreateLoanInput) (*models.Loan, error) {
+func (s *LoanService) CreateLoan(input dto.CreateLoanInput) error {
 	newDebtID := uuid.New()
 	loanDate, err := time.Parse("2006-01-02", input.LoanDate)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	newLoan := models.Loan{

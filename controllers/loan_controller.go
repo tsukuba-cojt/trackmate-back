@@ -40,7 +40,7 @@ func (c *LoanController) GetLoanSummary(ctx *gin.Context) {
 func (c *LoanController) CreateLoan(ctx *gin.Context) {
 	var input dto.CreateLoanInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request"})
 		return
 	}
 
@@ -53,5 +53,5 @@ func (c *LoanController) CreateLoan(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": loan})
+	ctx.Status(http.StatusCreated)
 }

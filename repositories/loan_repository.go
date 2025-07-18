@@ -52,10 +52,10 @@ func (r *LoanRepository) GetLoanSummary(userId string) (*[]dto.LoanSummaryRespon
 }
 
 // 借金を作成する関数の定義
-func (r *LoanRepository) CreateLoan(newLoan models.Loan) (*models.Loan, error) {
+func (r *LoanRepository) CreateLoan(newLoan models.Loan) error {
 	result := r.db.Create(&newLoan)
 	if result.Error != nil {
-		return nil, result.Error
+		return result.Error
 	}
-	return &newLoan, nil
+	return nil
 }
