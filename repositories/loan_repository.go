@@ -32,18 +32,21 @@ func (r *LoanRepository) GetLoanSummary(userId string) (*[]dto.LoanSummaryRespon
 	result := r.db.Table("loans").
 		Select("loan_people.loan_person_name as person_name, loans.is_debt as is_debt, SUM(loan_amount) as sum_amount").
 		Joins("JOIN loan_people ON loans.loan_person_id = loan_people.loan_person_id").
-		Where("user_id = ?", userId).
+		Where("loans.user_id = ? AND loans.deleted_at IS NULL", userId).
 		Group("loan_people.loan_person_name, loans.is_debt").
 		Scan(&loanSummary)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
+	//fmt.Println(loanSummary)
+
 	for i := range loanSummary {
 		var loanHistory []dto.LoanHistoryResponse
 		result := r.db.Table("loans").
-			Select("loan_date, loan_amount").
-			Where("loan_person_id = ? AND is_debt = ?", loanSummary[i].PersonName, loanSummary[i].IsDebt).
+			Select("loans.loan_date as date, loans.loan_amount as amount").
+			Joins("JOIN loan_people ON loans.loan_person_id = loan_people.loan_person_id").
+			Where("loan_people.loan_person_name = ? AND loans.is_debt = ? AND loans.deleted_at IS NULL", loanSummary[i].PersonName, loanSummary[i].IsDebt).
 			Scan(&loanHistory)
 		loanSummary[i].History = loanHistory
 		if result.Error != nil {
@@ -69,7 +72,17 @@ func (r *LoanRepository) DeleteLoan(userId string, personName string, isDebt boo
 		return errors.New("loan not found")
 	}
 
-	result := r.db.Where("user_id = ? AND loan_person_name = ? AND is_debt = ?", userId, personName, isDebt).Delete(&models.Loan{})
+	var loanPersonID string
+	err = r.db.Table("loan_people").
+		Select("loan_person_id").
+		Where("loan_person_name = ?", personName).
+		Scan(&loanPersonID).Error
+	if err != nil {
+		return err
+	}
+
+	result := r.db.Where("user_id = ? AND loan_person_id = ? AND is_debt = ?", userId, loanPersonID, isDebt).
+		Delete(&models.Loan{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -81,7 +94,7 @@ func (r *LoanRepository) FindLoan(userId string, userName string, isDebt bool) e
 	result := r.db.Table("loans").
 		Select("loans.*").
 		Joins("JOIN loan_people ON loans.loan_person_id = loan_people.loan_person_id").
-		Where("loans.user_id = ? AND loan_people.loan_person_name = ? AND loans.is_debt = ?", userId, userName, isDebt).
+		Where("loans.user_id = ? AND loan_people.loan_person_name = ? AND loans.is_debt = ? AND loans.deleted_at IS NULL", userId, userName, isDebt).
 		First(&loan)
 	if result.Error != nil {
 		return result.Error

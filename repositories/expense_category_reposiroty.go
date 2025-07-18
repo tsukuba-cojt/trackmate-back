@@ -62,7 +62,7 @@ func (r *ExpenseCategoryRepository) GetExpenseCategorySummary(userId string) (*[
 	result := r.db.Table("expenses").
 		Select("expenses.expense_category_id as category_id, expense_categories.expense_category_name as category_name, SUM(expenses.expense_amount) as sum").
 		Joins("JOIN expense_categories ON expenses.expense_category_id = expense_categories.expense_category_id").
-		Where("expenses.user_id = ?", userId).
+		Where("expenses.user_id = ? AND expenses.deleted_at IS NULL", userId).
 		Group("expenses.expense_category_id, expense_categories.expense_category_name").
 		Scan(&expenseCategorySummary)
 	if result.Error != nil {
