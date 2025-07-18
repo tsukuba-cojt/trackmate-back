@@ -72,6 +72,7 @@ func (r *LoanRepository) DeleteLoan(userId string, personName string, isDebt boo
 		return errors.New("loan not found")
 	}
 
+	// loan_person_idを取得
 	var loanPersonID string
 	err = r.db.Table("loan_people").
 		Select("loan_person_id").
