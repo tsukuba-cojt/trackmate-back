@@ -1,6 +1,9 @@
 package repositories
 
 import (
+	"errors"
+	"log"
+	"myapp/dto"
 	"myapp/models"
 
 	"gorm.io/gorm"
@@ -10,7 +13,9 @@ import (
 type IExpenseCategoryRepository interface {
 	FindAllExpenseCategory(userId string) (*[]models.ExpenseCategory, error)
 	CreateExpenseCategory(expenseCategory models.ExpenseCategory) (*models.ExpenseCategory, error)
-	FindExpenseCategory(expenseCategoryID string) (string, error)
+	FindExpenseCategory(userId string, expenseCategoryId string) (*models.ExpenseCategory, error)
+	GetExpenseCategorySummary(userId string) (*[]dto.ExpenseCategorySummaryResponse, error)
+	DeleteExpenseCategory(userId string, expenseCategoryId string) error
 }
 
 // リポジトリの定義
@@ -43,11 +48,50 @@ func (r *ExpenseCategoryRepository) CreateExpenseCategory(expenseCategory models
 }
 
 // 支出カテゴリを取得する関数の定義
-func (r *ExpenseCategoryRepository) FindExpenseCategory(expenseCategoryID string) (string, error) {
-	expenseCategoryName := ""
-	result := r.db.Find(&expenseCategoryName, "expense_category_id = ?", expenseCategoryID)
+func (r *ExpenseCategoryRepository) FindExpenseCategory(userId string, expenseCategoryId string) (*models.ExpenseCategory, error) {
+	expenseCategory := models.ExpenseCategory{}
+	result := r.db.Find(&expenseCategory, "expense_category_id = ? AND user_id = ?", expenseCategoryId, userId)
 	if result.Error != nil {
-		return "", result.Error
+		return nil, result.Error
 	}
-	return expenseCategoryName, nil
+	return &expenseCategory, nil
+}
+
+func (r *ExpenseCategoryRepository) GetExpenseCategorySummary(userId string) (*[]dto.ExpenseCategorySummaryResponse, error) {
+	var expenseCategorySummary []dto.ExpenseCategorySummaryResponse
+	result := r.db.Table("expenses").
+		Select("expenses.expense_category_id as category_id, expense_categories.expense_category_name as category_name, SUM(expenses.expense_amount) as sum").
+		Joins("JOIN expense_categories ON expenses.expense_category_id = expense_categories.expense_category_id").
+		Where("expenses.user_id = ?", userId).
+		Group("expenses.expense_category_id, expense_categories.expense_category_name").
+		Scan(&expenseCategorySummary)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	log.Println("expenseCategorySummary", expenseCategorySummary)
+	return &expenseCategorySummary, nil
+}
+
+func (r *ExpenseCategoryRepository) DeleteExpenseCategory(userId string, expenseCategoryId string) error {
+	_, err := r.FindExpenseCategory(userId, expenseCategoryId)
+	if err != nil {
+		return errors.New("expense category not found")
+	}
+
+	var count int64
+	if err := r.db.Model(&models.Expense{}).
+		Where("expense_category_id = ?", expenseCategoryId).
+		Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		// 参照されている場合はエラーを返す
+		return errors.New("category is referenced by expenses")
+	}
+
+	result := r.db.Where("expense_category_id = ? AND user_id = ?", expenseCategoryId, userId).Delete(&models.ExpenseCategory{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

@@ -10,8 +10,9 @@ import (
 
 // インターフェースの定義
 type IExpenseCategoryService interface {
-	FindAllExpenseCategory(userId string) (*[]models.ExpenseCategory, error)
+	GetExpenseCategorySummary(userId string) (*[]dto.ExpenseCategorySummaryResponse, error)
 	CreateExpenseCategory(input dto.CreateExpenseCategoryInput) (*models.ExpenseCategory, error)
+	DeleteExpenseCategory(userId string, expenseCategoryId string) error
 }
 
 // サービスの定義
@@ -25,8 +26,8 @@ func NewExpenseCategoryService(repository repositories.IExpenseCategoryRepositor
 }
 
 // ユーザーごとの全ての支出カテゴリを取得する関数の定義
-func (s *ExpenseCategoryService) FindAllExpenseCategory(userId string) (*[]models.ExpenseCategory, error) {
-	return s.repository.FindAllExpenseCategory(userId)
+func (s *ExpenseCategoryService) GetExpenseCategorySummary(userId string) (*[]dto.ExpenseCategorySummaryResponse, error) {
+	return s.repository.GetExpenseCategorySummary(userId)
 }
 
 // 支出カテゴリを作成する関数の定義
@@ -39,4 +40,8 @@ func (s *ExpenseCategoryService) CreateExpenseCategory(input dto.CreateExpenseCa
 	}
 
 	return s.repository.CreateExpenseCategory(newExpenseCategory)
+}
+
+func (s *ExpenseCategoryService) DeleteExpenseCategory(userId string, expenseCategoryId string) error {
+	return s.repository.DeleteExpenseCategory(userId, expenseCategoryId)
 }
