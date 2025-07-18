@@ -40,7 +40,16 @@ func (r *ExpenseCategoryRepository) FindAllExpenseCategory(userId string) (*[]mo
 
 // 支出カテゴリを作成する関数の定義
 func (r *ExpenseCategoryRepository) CreateExpenseCategory(expenseCategory models.ExpenseCategory) (*models.ExpenseCategory, error) {
-	result := r.db.Create(&expenseCategory)
+	existingExpenseCategory := models.ExpenseCategory{}
+	result := r.db.Find(&existingExpenseCategory, "expense_category_name = ? AND user_id = ?", expenseCategory.ExpenseCategoryName, expenseCategory.UserID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected > 0 {
+		return nil, errors.New("expense category already exists")
+	}
+
+	result = r.db.Create(&expenseCategory)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -72,6 +81,7 @@ func (r *ExpenseCategoryRepository) GetExpenseCategorySummary(userId string) (*[
 	return &expenseCategorySummary, nil
 }
 
+// 支出カテゴリを削除する関数の定義
 func (r *ExpenseCategoryRepository) DeleteExpenseCategory(userId string, expenseCategoryId string) error {
 	_, err := r.FindExpenseCategory(userId, expenseCategoryId)
 	if err != nil {
