@@ -6,7 +6,9 @@ import (
 	"myapp/middlewares"
 	"myapp/repositories"
 	"myapp/services"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,6 +45,14 @@ func main() {
 
 	// ルーターの初期化
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // フロントエンドのURLを明示的に許可
+		AllowMethods:     []string{"GET", "POST", "PUT"},
+		AllowHeaders:     []string{"Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour, // プリフライトリクエストをキャッシュ
+	}))
 
 	// 支出のルーティング
 	expenseRouterWithAuth := r.Group("/expenses", middlewares.AuthMiddleware(authService))
@@ -57,8 +67,9 @@ func main() {
 
 	// 借金のルーティング
 	loanRouterWithAuth := r.Group("/loan", middlewares.AuthMiddleware(authService))
-	loanRouterWithAuth.GET("", loanController.FindAllLoan)
+	loanRouterWithAuth.GET("", loanController.GetLoanSummary)
 	loanRouterWithAuth.POST("", loanController.CreateLoan)
+	loanRouterWithAuth.DELETE("", loanController.DeleteLoan)
 
 	// 借金の人のルーティング
 	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))

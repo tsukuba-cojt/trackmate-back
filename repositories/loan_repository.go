@@ -32,7 +32,7 @@ func (r *LoanRepository) GetLoanSummary(userId string) (*[]dto.LoanSummaryRespon
 	result := r.db.Table("loans").
 		Select("loan_people.loan_person_name as person_name, loans.is_debt as is_debt, SUM(loan_amount) as sum_amount").
 		Joins("JOIN loan_people ON loans.loan_person_id = loan_people.loan_person_id").
-		Where("user_id = ?", userId).
+		Where("loans.user_id = ?", userId).
 		Group("loan_people.loan_person_name, loans.is_debt").
 		Scan(&loanSummary)
 	if result.Error != nil {

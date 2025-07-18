@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"myapp/dto"
 	"myapp/models"
 	"myapp/services"
@@ -41,10 +42,19 @@ func (c *LoanController) GetLoanSummary(ctx *gin.Context) {
 // 借金を作成する関数の定義
 func (c *LoanController) CreateLoan(ctx *gin.Context) {
 	var input dto.CreateLoanInput
+	//body, _ := ctx.GetRawData()
+	//fmt.Printf("リクエストボディ: %s\n", string(body))
+
+	// リクエストボディを再設定(GetRawDataで読み取った後は再設定が必要)
+	//ctx.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+
 	if err := ctx.ShouldBindJSON(&input); err != nil {
+		fmt.Println("JSON Binding Error:", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request"})
 		return
 	}
+
+	//fmt.Printf("Parsed Input: %+v\n", input)
 
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
@@ -58,6 +68,7 @@ func (c *LoanController) CreateLoan(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
+// 借金を削除する関数の定義
 func (c *LoanController) DeleteLoan(ctx *gin.Context) {
 	userId := ctx.MustGet("user").(*models.User).UserID.String()
 	var input dto.DeleteLoanInput

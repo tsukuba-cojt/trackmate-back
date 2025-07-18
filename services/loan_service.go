@@ -43,7 +43,7 @@ func (s *LoanService) CreateLoan(input dto.CreateLoanInput) error {
 		LoanID:       newDebtID,
 		UserID:       uuid.MustParse(input.UserID),
 		LoanPersonID: uuid.MustParse(input.LoanPersonID),
-		IsDebt:       input.IsDebt,
+		IsDebt:       *input.IsDebt,
 		LoanDate:     loanDate,
 		LoanAmount:   input.LoanAmount,
 	}
