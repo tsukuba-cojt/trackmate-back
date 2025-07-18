@@ -57,8 +57,9 @@ func main() {
 
 	// 借金のルーティング
 	loanRouterWithAuth := r.Group("/loan", middlewares.AuthMiddleware(authService))
-	loanRouterWithAuth.GET("", loanController.FindAllLoan)
+	loanRouterWithAuth.GET("", loanController.GetLoanSummary)
 	loanRouterWithAuth.POST("", loanController.CreateLoan)
+	loanRouterWithAuth.DELETE("", loanController.DeleteLoan)
 
 	// 借金の人のルーティング
 	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))

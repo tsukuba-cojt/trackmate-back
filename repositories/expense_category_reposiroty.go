@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"errors"
-	"log"
 	"myapp/dto"
 	"myapp/models"
 
@@ -57,18 +56,18 @@ func (r *ExpenseCategoryRepository) FindExpenseCategory(userId string, expenseCa
 	return &expenseCategory, nil
 }
 
+// 支出カテゴリの合計金額を取得する関数の定義
 func (r *ExpenseCategoryRepository) GetExpenseCategorySummary(userId string) (*[]dto.ExpenseCategorySummaryResponse, error) {
 	var expenseCategorySummary []dto.ExpenseCategorySummaryResponse
 	result := r.db.Table("expenses").
 		Select("expenses.expense_category_id as category_id, expense_categories.expense_category_name as category_name, SUM(expenses.expense_amount) as sum").
 		Joins("JOIN expense_categories ON expenses.expense_category_id = expense_categories.expense_category_id").
-		Where("expenses.user_id = ?", userId).
+		Where("expenses.user_id = ? AND expenses.deleted_at IS NULL", userId).
 		Group("expenses.expense_category_id, expense_categories.expense_category_name").
 		Scan(&expenseCategorySummary)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	log.Println("expenseCategorySummary", expenseCategorySummary)
 	return &expenseCategorySummary, nil
 }
 
