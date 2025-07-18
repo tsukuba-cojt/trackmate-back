@@ -14,7 +14,7 @@ type LoanSummaryResponse struct {
 	PersonName string                `json:"person_name"`
 	IsDebt     bool                  `json:"is_debt"`
 	SumAmount  int                   `json:"sum_amount"`
-	History    []LoanHistoryResponse `json:"history"`
+	History    []LoanHistoryResponse `json:"history" gorm:"-"`
 }
 
 type LoanHistoryResponse struct {
@@ -24,5 +24,5 @@ type LoanHistoryResponse struct {
 
 type DeleteLoanInput struct {
 	PersonName string `json:"person_name" binding:"required"`
-	IsDebt     bool   `json:"is_debt" binding:"required"`
+	IsDebt     *bool  `json:"is_debt" binding:"required"`
 }
