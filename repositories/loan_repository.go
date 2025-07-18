@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"myapp/dto"
 	"myapp/models"
 
@@ -12,6 +13,7 @@ type ILoanRepository interface {
 	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
 	CreateLoan(newLoan models.Loan) error
 	DeleteLoan(userId string, personName string, isDebt bool) error
+	FindLoan(userId string, userName string, isDebt bool) error
 }
 
 // リポジトリの定義
@@ -62,7 +64,25 @@ func (r *LoanRepository) CreateLoan(newLoan models.Loan) error {
 }
 
 func (r *LoanRepository) DeleteLoan(userId string, personName string, isDebt bool) error {
+	err := r.FindLoan(userId, personName, isDebt)
+	if err != nil {
+		return errors.New("loan not found")
+	}
+
 	result := r.db.Where("user_id = ? AND loan_person_name = ? AND is_debt = ?", userId, personName, isDebt).Delete(&models.Loan{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *LoanRepository) FindLoan(userId string, userName string, isDebt bool) error {
+	var loan models.Loan
+	result := r.db.Table("loans").
+		Select("loans.*").
+		Joins("JOIN loan_people ON loans.loan_person_id = loan_people.loan_person_id").
+		Where("loans.user_id = ? AND loan_people.loan_person_name = ? AND loans.is_debt = ?", userId, userName, isDebt).
+		First(&loan)
 	if result.Error != nil {
 		return result.Error
 	}
