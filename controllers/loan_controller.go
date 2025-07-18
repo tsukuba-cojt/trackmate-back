@@ -47,7 +47,7 @@ func (c *LoanController) CreateLoan(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
 
-	loan, err := c.service.CreateLoan(input)
+	err := c.service.CreateLoan(input)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -10,7 +10,7 @@ import (
 // インターフェースの定義
 type ILoanRepository interface {
 	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
-	CreateLoan(newLoan models.Loan) (*models.Loan, error)
+	CreateLoan(newLoan models.Loan) error
 }
 
 // リポジトリの定義

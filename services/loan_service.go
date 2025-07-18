@@ -12,7 +12,7 @@ import (
 // インターフェースの定義
 type ILoanService interface {
 	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
-	CreateLoan(input dto.CreateLoanInput) (*models.Loan, error)
+	CreateLoan(input dto.CreateLoanInput) error
 }
 
 // サービスの定義
