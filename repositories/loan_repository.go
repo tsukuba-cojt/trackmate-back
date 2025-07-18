@@ -11,6 +11,7 @@ import (
 type ILoanRepository interface {
 	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
 	CreateLoan(newLoan models.Loan) error
+	DeleteLoan(userId string, personName string, isDebt bool) error
 }
 
 // リポジトリの定義
@@ -54,6 +55,14 @@ func (r *LoanRepository) GetLoanSummary(userId string) (*[]dto.LoanSummaryRespon
 // 借金を作成する関数の定義
 func (r *LoanRepository) CreateLoan(newLoan models.Loan) error {
 	result := r.db.Create(&newLoan)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *LoanRepository) DeleteLoan(userId string, personName string, isDebt bool) error {
+	result := r.db.Where("user_id = ? AND loan_person_name = ? AND is_debt = ?", userId, personName, isDebt).Delete(&models.Loan{})
 	if result.Error != nil {
 		return result.Error
 	}

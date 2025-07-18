@@ -21,3 +21,8 @@ type LoanHistoryResponse struct {
 	Date   string `json:"date"`
 	Amount int    `json:"amount"`
 }
+
+type DeleteLoanInput struct {
+	PersonName string `json:"person_name" binding:"required"`
+	IsDebt     bool   `json:"is_debt" binding:"required"`
+}

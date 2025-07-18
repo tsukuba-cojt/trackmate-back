@@ -13,6 +13,7 @@ import (
 type ILoanService interface {
 	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
 	CreateLoan(input dto.CreateLoanInput) error
+	DeleteLoan(userId string, personName string, isDebt bool) error
 }
 
 // サービスの定義
@@ -48,4 +49,9 @@ func (s *LoanService) CreateLoan(input dto.CreateLoanInput) error {
 	}
 
 	return s.repository.CreateLoan(newLoan)
+}
+
+// 借金を削除する関数の定義
+func (s *LoanService) DeleteLoan(userId string, personName string, isDebt bool) error {
+	return s.repository.DeleteLoan(userId, personName, isDebt)
 }

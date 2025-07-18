@@ -13,6 +13,7 @@ import (
 type ILoanController interface {
 	GetLoanSummary(ctx *gin.Context)
 	CreateLoan(ctx *gin.Context)
+	DeleteLoan(ctx *gin.Context)
 }
 
 // コントローラーの定義
@@ -27,7 +28,8 @@ func NewLoanController(service services.ILoanService) ILoanController {
 
 // ユーザーごとの全ての借金を取得する関数の定義
 func (c *LoanController) GetLoanSummary(ctx *gin.Context) {
-	items, err := c.service.GetLoanSummary()
+	user := ctx.MustGet("user").(*models.User)
+	items, err := c.service.GetLoanSummary(user.UserID.String())
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
