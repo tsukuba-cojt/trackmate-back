@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"errors"
-	"log"
 	"myapp/dto"
 	"myapp/models"
 
@@ -57,6 +56,7 @@ func (r *ExpenseCategoryRepository) FindExpenseCategory(userId string, expenseCa
 	return &expenseCategory, nil
 }
 
+// 支出カテゴリの合計金額を取得する関数の定義
 func (r *ExpenseCategoryRepository) GetExpenseCategorySummary(userId string) (*[]dto.ExpenseCategorySummaryResponse, error) {
 	var expenseCategorySummary []dto.ExpenseCategorySummaryResponse
 	result := r.db.Table("expenses").
@@ -68,7 +68,6 @@ func (r *ExpenseCategoryRepository) GetExpenseCategorySummary(userId string) (*[
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	log.Println("expenseCategorySummary", expenseCategorySummary)
 	return &expenseCategorySummary, nil
 }
 

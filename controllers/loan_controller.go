@@ -11,7 +11,7 @@ import (
 
 // インターフェースの定義
 type ILoanController interface {
-	FindAllLoan(ctx *gin.Context)
+	GetLoanSummary(ctx *gin.Context)
 	CreateLoan(ctx *gin.Context)
 }
 
@@ -26,8 +26,8 @@ func NewLoanController(service services.ILoanService) ILoanController {
 }
 
 // ユーザーごとの全ての借金を取得する関数の定義
-func (c *LoanController) FindAllLoan(ctx *gin.Context) {
-	items, err := c.service.FindAllLoan()
+func (c *LoanController) GetLoanSummary(ctx *gin.Context) {
+	items, err := c.service.GetLoanSummary()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return

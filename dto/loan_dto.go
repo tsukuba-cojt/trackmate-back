@@ -9,3 +9,15 @@ type CreateLoanInput struct {
 	LoanAmount   int    `json:"amount" binding:"required"`
 	Description  string `json:"description" binding:"required"`
 }
+
+type LoanSummaryResponse struct {
+	PersonName string                `json:"person_name"`
+	IsDebt     bool                  `json:"is_debt"`
+	SumAmount  int                   `json:"sum_amount"`
+	History    []LoanHistoryResponse `json:"history"`
+}
+
+type LoanHistoryResponse struct {
+	Date   string `json:"date"`
+	Amount int    `json:"amount"`
+}

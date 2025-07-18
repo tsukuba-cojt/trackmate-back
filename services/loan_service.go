@@ -11,7 +11,7 @@ import (
 
 // インターフェースの定義
 type ILoanService interface {
-	FindAllLoan() (*[]models.Loan, error)
+	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
 	CreateLoan(input dto.CreateLoanInput) (*models.Loan, error)
 }
 
@@ -26,8 +26,8 @@ func NewLoanService(repository repositories.ILoanRepository) ILoanService {
 }
 
 // ユーザーごとの全ての借金を取得する関数の定義
-func (s *LoanService) FindAllLoan() (*[]models.Loan, error) {
-	return s.repository.FindAllLoan()
+func (s *LoanService) GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error) {
+	return s.repository.GetLoanSummary(userId)
 }
 
 // 借金を作成する関数の定義
