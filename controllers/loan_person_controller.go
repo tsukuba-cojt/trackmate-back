@@ -13,6 +13,7 @@ import (
 type ILoanPersonController interface {
 	FindAllLoanPerson(ctx *gin.Context)
 	CreateLoanPerson(ctx *gin.Context)
+	DeleteLoanPerson(ctx *gin.Context)
 }
 
 // コントローラーの定義
@@ -49,11 +50,43 @@ func (c *LoanPersonController) CreateLoanPerson(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
 
-	loanPerson, err := c.service.CreateLoanPerson(input)
+	err := c.service.CreateLoanPerson(input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if err.Error() == "loan person already exists" {
+			ctx.JSON(http.StatusConflict, gin.H{"error": "Loan person already exists"})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
+			return
+		}
+	}
+
+	ctx.Status(http.StatusCreated)
+}
+
+func (c *LoanPersonController) DeleteLoanPerson(ctx *gin.Context) {
+	var input dto.DeleteLoanPersonInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, "Bad Request")
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": loanPerson})
+	user := ctx.MustGet("user").(*models.User)
+	input.UserID = user.UserID.String()
+
+	err := c.service.DeleteLoanPerson(input)
+	if err != nil {
+		if err.Error() == "loan person not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Loan person not found"})
+			return
+		} else if err.Error() == "loan person is referenced by loans" {
+			ctx.JSON(http.StatusConflict, gin.H{"error": "Loan person is referenced by loans"})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
+			return
+		}
+	}
+
+	ctx.Status(http.StatusOK)
 }
