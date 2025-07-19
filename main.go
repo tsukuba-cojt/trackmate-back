@@ -75,6 +75,7 @@ func main() {
 	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
 	loanPersonRouterWithAuth.GET("", loanPersonController.FindAllLoanPerson)
 	loanPersonRouterWithAuth.POST("", loanPersonController.CreateLoanPerson)
+	loanPersonRouterWithAuth.DELETE("", loanPersonController.DeleteLoanPerson)
 
 	// 認証のルーティング
 	authRouter := r.Group("/auth")
