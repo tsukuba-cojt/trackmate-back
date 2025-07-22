@@ -1,2 +1,5 @@
 .env
 main.go.old
+tmp/build-errors.log
+tmp/main
+tmp/main.bak
