@@ -47,6 +47,7 @@ func (r *LoanRepository) GetLoanSummary(userId string) (*[]dto.LoanSummaryRespon
 			Select("loans.loan_date as date, loans.loan_amount as amount").
 			Joins("JOIN loan_people ON loans.loan_person_id = loan_people.loan_person_id").
 			Where("loan_people.loan_person_name = ? AND loans.is_debt = ? AND loans.deleted_at IS NULL", loanSummary[i].PersonName, loanSummary[i].IsDebt).
+			Order("loans.loan_date ASC").
 			Scan(&loanHistory)
 		loanSummary[i].History = loanHistory
 		if result.Error != nil {
