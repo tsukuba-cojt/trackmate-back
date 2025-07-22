@@ -11,8 +11,9 @@ import (
 
 // インターフェースの定義
 type IExpenseController interface {
-	FindAllExpense(ctx *gin.Context)
+	GetExpenseSummary(ctx *gin.Context)
 	CreateExpense(ctx *gin.Context)
+	DeleteExpense(ctx *gin.Context)
 }
 
 // コントローラーの定義
@@ -26,7 +27,7 @@ func NewExpenseController(service services.IExpenseService) IExpenseController {
 }
 
 // ユーザーごとの全ての支出を取得する関数の定義
-func (c *ExpenseController) FindAllExpense(ctx *gin.Context) {
+func (c *ExpenseController) GetExpenseSummary(ctx *gin.Context) {
 	user := ctx.MustGet("user").(*models.User)
 	userId := user.UserID.String()
 	items, err := c.service.FindAllExpense(userId)
@@ -42,18 +43,35 @@ func (c *ExpenseController) FindAllExpense(ctx *gin.Context) {
 func (c *ExpenseController) CreateExpense(ctx *gin.Context) {
 	var input dto.CreateExpenseInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
 	}
 
 	user := ctx.MustGet("user").(*models.User)
 	input.UserID = user.UserID.String()
 
-	expense, err := c.service.CreateExpense(input)
+	_, err := c.service.CreateExpense(input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": expense})
+	ctx.Status(http.StatusOK)
+}
+
+
+func (c *ExpenseController) DeleteExpense(ctx *gin.Context) {
+	expenseId := ctx.Param("id")
+	if expenseId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Expense ID is required"})
+		return
+	}
+
+	err := c.service.DeleteExpense(expenseId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
 }
