@@ -52,11 +52,16 @@ func (c *ExpenseCategoryController) CreateExpenseCategory(ctx *gin.Context) {
 
 	_, err := c.service.CreateExpenseCategory(input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
-		return
+		if err.Error() == "expense category already exists" {
+			ctx.JSON(http.StatusConflict, gin.H{"error": "Expense category already exists"})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unexpected error"})
+			return
+		}
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusCreated)
 }
 
 func (c *ExpenseCategoryController) DeleteExpenseCategory(ctx *gin.Context) {

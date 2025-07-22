@@ -36,6 +36,11 @@ func main() {
 	loanPersonService := services.NewLoanPersonService(loanPersonRepository)
 	loanPersonController := controllers.NewLoanPersonController(loanPersonService)
 
+	// 予算のリポジトリ、サービス、コントローラーの初期化
+	budgetRepository := repositories.NewBudgetRepository(db)
+	budgetService := services.NewBudgetService(budgetRepository)
+	budgetController := controllers.NewBudgetController(budgetService)
+
 	// 認証のリポジトリ、サービス、コントローラーの初期化
 	authRepository := repositories.NewAuthRepository(db)
 	authService := services.NewAuthService(authRepository)
@@ -65,6 +70,11 @@ func main() {
 	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
 	loanPersonRouterWithAuth.GET("", loanPersonController.FindAllLoanPerson)
 	loanPersonRouterWithAuth.POST("", loanPersonController.CreateLoanPerson)
+	loanPersonRouterWithAuth.DELETE("", loanPersonController.DeleteLoanPerson)
+
+	// 予算のルーティング
+	budgetRouterWithAuth := r.Group("/budget", middlewares.AuthMiddleware(authService))
+	budgetRouterWithAuth.POST("", budgetController.CreateBudget)
 
 	// 認証のルーティング
 	authRouter := r.Group("/auth")
