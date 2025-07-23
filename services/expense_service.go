@@ -11,7 +11,7 @@ import (
 
 // インターフェースの定義
 type IExpenseService interface {
-	GetExpenseCategorySummary(userId string) (*[]dto.GetExpenseCategorySummary, error)
+	GetExpenseSummary(userId string) (*[]dto.GetExpenseCategorySummary, error)
 	CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error)
 	DeleteExpense(userId string, expenseId string) error
 }
