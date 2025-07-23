@@ -46,8 +46,9 @@ func main() {
 
 	// 支出のルーティング
 	expenseRouterWithAuth := r.Group("/expenses", middlewares.AuthMiddleware(authService))
-	expenseRouterWithAuth.GET("", expenseController.FindAllExpense)
+	expenseRouterWithAuth.GET("", expenseController.GetExpenseSummary)
 	expenseRouterWithAuth.POST("", expenseController.CreateExpense)
+	expenseRouterWithAuth.DELETE("", expenseController.DeleteExpense)
 
 	// 支出カテゴリのルーティング
 	expenseCategoryRouterWithAuth := r.Group("/categories", middlewares.AuthMiddleware(authService))
