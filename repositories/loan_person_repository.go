@@ -31,7 +31,7 @@ func (r *LoanPersonRepository) FindAllLoanPerson(userId string) ([]dto.FindAllLo
 	result := r.db.Table("loan_people").
 		Select("loan_person_id as person_id, loan_person_name as person_name").
 		Where("user_id = ? AND deleted_at IS NULL", userId).
-		Order("loan_person_name DESC").
+		Order("created_at DESC").
 		Scan(&loanPersons)
 	if result.Error != nil {
 		return nil, result.Error
