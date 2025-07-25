@@ -3,6 +3,8 @@ package services
 import (
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 	"myapp/dto"
 	"myapp/models"
 	"myapp/repositories"
@@ -19,11 +21,11 @@ type IExpenseService interface {
 
 // サービスの定義
 type ExpenseService struct {
-	ExpenseRepository repositories.IExpenseRepository // リポジトリのインターフェース
+	ExpenseRepository repositories.IExpenseRepository
 }
 
 // コンストラクタの定義
-func NewExpenseService(expenseRepository repositories.IExpenseRepository) IExpenseService { // 戻り値をインターフェース型に
+func NewExpenseService(expenseRepository repositories.IExpenseRepository) IExpenseService {
 	return &ExpenseService{ExpenseRepository: expenseRepository}
 }
 
@@ -41,21 +43,31 @@ func (s *ExpenseService) FindAllExpense(userId string) ([]models.Expense, error)
 
 // CreateExpense はサービス層でリポジトリに委譲するメソッド
 func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error) {
-    newExpense := models.Expense{
-        UserID:            input.UserID,
-        ExpenseCategoryID: input.ExpenseCategoryID,
-        ExpenseDate:       time.Time{},
-        Amount:            input.ExpenseAmount,
-        Description:       input.Description,
-    }
+	// string UserID を uuid.UUID に変換
+	userID, err := uuid.Parse(input.UserID)
+	if err != nil {
+		return nil, errors.New("invalid UserID format")
+	}
 
-    // ここで input.ExpenseDate (string) を time.Time に変換するロジックを追加
-    parsedDate, err := time.Parse("2006-01-02", input.ExpenseDate) // "YYYY-MM-DD"形式と仮定
-    if err != nil {
-        return nil, errors.New("invalid expense date format")
-    }
-    newExpense.ExpenseDate = parsedDate
+	// string ExpenseCategoryID を uuid.UUID に変換
+	expenseCategoryID, err := uuid.Parse(input.ExpenseCategoryID)
+	if err != nil {
+		return nil, errors.New("invalid ExpenseCategoryID format")
+	}
 
+	// ExpenseDate (string) を time.Time に変換
+	parsedDate, err := time.Parse("2006-01-02", input.ExpenseDate)
+	if err != nil {
+		return nil, errors.New("invalid expense date format")
+	}
+
+	newExpense := models.Expense{
+		UserID:            userID,
+		ExpenseCategoryID: expenseCategoryID,
+		ExpenseDate:       parsedDate,
+		ExpenseAmount:     input.ExpenseAmount,
+		Description:       input.Description,
+	}
 
 	createdExpense, err := s.ExpenseRepository.CreateExpense(newExpense)
 	if err != nil {
@@ -80,18 +92,18 @@ func (s *ExpenseService) ExpenseSummary(userId string) (*dto.ExpenseSummary, err
 
 	totalExpenses := 0
 	for _, expense := range expenses {
-		totalExpenses += expense.Amount
+		totalExpenses += expense.ExpenseAmount
 	}
 
 	// リポジトリから予算、負債、貸付の合計情報を取得
 	budgetModel, err := s.ExpenseRepository.FindBudgetByUserID(userId)
 	budget := 0
 	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) { // レコードが見つからないエラー以外は返す
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
 		}
 	} else if budgetModel != nil {
-		budget = budgetModel.Amount
+		budget = int(budgetModel.Amount)
 	}
 
 	debts, err := s.ExpenseRepository.FindDebtsByUserID(userId)
@@ -101,8 +113,12 @@ func (s *ExpenseService) ExpenseSummary(userId string) (*dto.ExpenseSummary, err
 			return nil, err
 		}
 	} else {
-		for _, debt := range debts {
-			debtSum += debt.Amount
+		// モデルに金額フィールドがないため、ここでは合計を計算できません。
+		// 負債の合計を実際に算出するには、models.Debtに金額を表すフィールドが必要です。
+		// 例: debtSum += int(debt.Amount) または debtSum += int(debt.DebtAmount)
+		// 現在はモデルにフィールドがないため、加算は行わず debtSum は 0 のままです。
+		for range debts { // ループは回るが、金額を加算するフィールドがない
+			// debtSum += <ここに金額フィールドを記述>
 		}
 	}
 
@@ -113,8 +129,12 @@ func (s *ExpenseService) ExpenseSummary(userId string) (*dto.ExpenseSummary, err
 			return nil, err
 		}
 	} else {
-		for _, loan := range loans {
-			loanSum += loan.Amount
+		// モデルに金額フィールドがないため、ここでは合計を計算できません。
+		// 貸付の合計を実際に算出するには、models.Loanに金額を表すフィールドが必要です。
+		// 例: loanSum += int(loan.Amount) または loanSum += int(loan.LoanAmount)
+		// 現在はモデルにフィールドがないため、加算は行わず loanSum は 0 のままです。
+		for range loans { // ループは回るが、金額を加算するフィールドがない
+			// loanSum += <ここに金額フィールドを記述>
 		}
 	}
 
