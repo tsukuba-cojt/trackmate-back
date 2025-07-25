@@ -6,7 +6,9 @@ import (
 	"myapp/middlewares"
 	"myapp/repositories"
 	"myapp/services"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,9 +34,14 @@ func main() {
 	loanController := controllers.NewLoanController(loanService)
 
 	// 借金の人のリポジトリ、サービス、コントローラーの初期化
-	loanPartnerRepository := repositories.NewLoanPartnerRepository(db)
-	loanPartnerService := services.NewLoanPartnerService(loanPartnerRepository)
-	loanPartnerController := controllers.NewLoanPartnerController(loanPartnerService)
+	loanPersonRepository := repositories.NewLoanPersonRepository(db)
+	loanPersonService := services.NewLoanPersonService(loanPersonRepository)
+	loanPersonController := controllers.NewLoanPersonController(loanPersonService)
+
+	// 予算のリポジトリ、サービス、コントローラーの初期化
+	budgetRepository := repositories.NewBudgetRepository(db)
+	budgetService := services.NewBudgetService(budgetRepository)
+	budgetController := controllers.NewBudgetController(budgetService)
 
 	// 認証のリポジトリ、サービス、コントローラーの初期化
 	authRepository := repositories.NewAuthRepository(db)
@@ -43,6 +50,14 @@ func main() {
 
 	// ルーターの初期化
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3400"}, // フロントエンドのURLを明示的に許可
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour, // プリフライトリクエストをキャッシュ
+	}))
 
 	// 支出のルーティング
 	expenseRouterWithAuth := r.Group("/expenses", middlewares.AuthMiddleware(authService))
@@ -52,18 +67,25 @@ func main() {
 
 	// 支出カテゴリのルーティング
 	expenseCategoryRouterWithAuth := r.Group("/categories", middlewares.AuthMiddleware(authService))
-	expenseCategoryRouterWithAuth.GET("", expenseCategoryController.FindAllExpenseCategory)
+	expenseCategoryRouterWithAuth.GET("", expenseCategoryController.GetExpenseCategorySummary)
 	expenseCategoryRouterWithAuth.POST("", expenseCategoryController.CreateExpenseCategory)
+	expenseCategoryRouterWithAuth.DELETE("", expenseCategoryController.DeleteExpenseCategory)
 
 	// 借金のルーティング
 	loanRouterWithAuth := r.Group("/loan", middlewares.AuthMiddleware(authService))
-	loanRouterWithAuth.GET("", loanController.FindAllLoan)
+	loanRouterWithAuth.GET("", loanController.GetLoanSummary)
 	loanRouterWithAuth.POST("", loanController.CreateLoan)
+	loanRouterWithAuth.DELETE("", loanController.DeleteLoan)
 
 	// 借金の人のルーティング
-	loanPartnerRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
-	loanPartnerRouterWithAuth.GET("", loanPartnerController.FindAllLoanPartner)
-	loanPartnerRouterWithAuth.POST("", loanPartnerController.CreateLoanPartner)
+	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
+	loanPersonRouterWithAuth.GET("", loanPersonController.FindAllLoanPerson)
+	loanPersonRouterWithAuth.POST("", loanPersonController.CreateLoanPerson)
+	loanPersonRouterWithAuth.DELETE("", loanPersonController.DeleteLoanPerson)
+
+	// 予算のルーティング
+	budgetRouterWithAuth := r.Group("/budget", middlewares.AuthMiddleware(authService))
+	budgetRouterWithAuth.POST("", budgetController.CreateBudget)
 
 	// 認証のルーティング
 	authRouter := r.Group("/auth")
@@ -71,5 +93,5 @@ func main() {
 	authRouter.POST("/login", authController.Login)
 
 	// サーバーの起動
-	r.Run(":8080")
+	r.Run(":3401")
 }
