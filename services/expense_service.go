@@ -1,62 +1,51 @@
-package services
+package repositories
 
 import (
+	"errors"
 	"myapp/dto"
 	"myapp/models"
-	"myapp/repositories"
-	"time"
-
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-// インターフェースの定義
-type IExpenseService interface {
-	ExpenseSummary(userId string) (*[]dto.ExpenseSummary, error)
-	CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error)
-	DeleteExpense(userId string, expenseId string) error
-}
+func (r *ExpenseRepository) ExpenseSummary(userId string) (*dto.ExpenseSummary, error) {
+    var expenses []models.Expense
+    result := r.db.Where("user_id = ?", userId).Find(&expenses)
 
-// サービスの定義
-type ExpenseService struct {
-	repository repositories.IExpenseRepository
-}
+    if result.Error != nil {
+        if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+            return &dto.ExpenseSummary{
+                ExpensesSum:     0,
+                Budget:          0,
+                RemainingBudget: 0,
+                DebtSum:         0,
+                LoanSum:         0,
+            }, nil
+        }
+        return nil, result.Error
+    }
 
-// コンストラクタの定義
-func NewExpenseService(repository repositories.IExpenseRepository) IExpenseService {
-	return &ExpenseService{repository: repository}
-}
+    totalExpenses := 0
+    for _, expense := range expenses {
+        totalExpenses += expense.Amount
+    }
 
-// ユーザーごとの全ての支出を取得する関数の定義
-func (s *ExpenseService) ExpenseSummary(userId string) (*[]dto.ExpenseSummary, error) {
-	return s.repository.ExpenseSummary(userId)
-}
+	
 
-// 支出を作成する関数の定義
-func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error) {
-	newExpenseID := uuid.New()
-	expenseDate, err := time.Parse("2006-01-02", input.ExpenseDate)
-	if err != nil {
-		return nil, err
-	}
+    // ここに予算、負債、貸付などの情報を取得・計算するロジックを追加してください
+    // 例: ユーザーの予算情報をデータベースから取得
+    // var userBudget models.Budget
+    // r.db.Where("user_id = ?", userId).First(&userBudget)
+    // budget := userBudget.Amount
 
-	newExpense := models.Expense{
-		ExpenseID:         newExpenseID,
-		UserID:            uuid.MustParse(input.UserID),
-		ExpenseCategoryID: uuid.MustParse(input.ExpenseCategoryID),
-		ExpenseDate:       expenseDate,
-		ExpenseAmount:     input.ExpenseAmount,
-		Description:       input.Description,
-	}
+    // 仮のデータ（実際はDBや他の情報から取得・計算してください）
 
-	return s.repository.CreateExpense(newExpense)
-}
+    summary := dto.ExpenseSummary{
+        ExpensesSum:     totalExpenses,
+        Budget:          budget,
+        RemainingBudget: budget - totalExpenses,
+        DebtSum:         debtSum,
+        LoanSum:         loanSum,
+    }
 
-// 支出を削除する関数の定義
-func (s *ExpenseService) DeleteExpense(userId string, expenseId string) error {
-	expenseUUID, err := uuid.Parse(expenseId)
-	if err != nil {
-		return err
-	}
-
-	return s.repository.DeleteExpense(userId, expenseUUID)
+    return &summary, nil
 }
