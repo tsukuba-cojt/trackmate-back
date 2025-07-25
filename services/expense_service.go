@@ -11,7 +11,7 @@ import (
 
 // インターフェースの定義
 type IExpenseService interface {
-	GetExpenseSummary(userId string) (*[]dto.GetExpenseCategorySummary, error)
+	ExpenseSummary(userId string) (*[]dto.ExpenseSummary, error)
 	CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error)
 	DeleteExpense(userId string, expenseId string) error
 }
@@ -27,8 +27,8 @@ func NewExpenseService(repository repositories.IExpenseRepository) IExpenseServi
 }
 
 // ユーザーごとの全ての支出を取得する関数の定義
-func (s *ExpenseService) GetExpenseSummary(userId string) (*[]dto.GetExpenseSummary, error) {
-	return s.repository.GetExpenseSummary(userId)
+func (s *ExpenseService) ExpenseSummary(userId string) (*[]dto.ExpenseSummary, error) {
+	return s.repository.ExpenseSummary(userId)
 }
 
 // 支出を作成する関数の定義
