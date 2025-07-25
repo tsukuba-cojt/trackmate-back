@@ -11,8 +11,9 @@ import (
 
 // インターフェースの定義
 type ILoanService interface {
-	FindAllLoan() (*[]models.Loan, error)
-	CreateLoan(input dto.CreateLoanInput) (*models.Loan, error)
+	GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error)
+	CreateLoan(input dto.CreateLoanInput) error
+	DeleteLoan(userId string, personName string, isDebt *bool) error
 }
 
 // サービスの定義
@@ -26,26 +27,31 @@ func NewLoanService(repository repositories.ILoanRepository) ILoanService {
 }
 
 // ユーザーごとの全ての借金を取得する関数の定義
-func (s *LoanService) FindAllLoan() (*[]models.Loan, error) {
-	return s.repository.FindAllLoan()
+func (s *LoanService) GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse, error) {
+	return s.repository.GetLoanSummary(userId)
 }
 
 // 借金を作成する関数の定義
-func (s *LoanService) CreateLoan(input dto.CreateLoanInput) (*models.Loan, error) {
+func (s *LoanService) CreateLoan(input dto.CreateLoanInput) error {
 	newDebtID := uuid.New()
 	loanDate, err := time.Parse("2006-01-02", input.LoanDate)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	newLoan := models.Loan{
-		LoanID:        newDebtID,
-		UserID:        uuid.MustParse(input.UserID),
-		LoanPartnerID: uuid.MustParse(input.LoanPartnerID),
-		IsDebt:        input.IsDebt,
-		LoanDate:      loanDate,
-		LoanAmount:    input.LoanAmount,
+		LoanID:       newDebtID,
+		UserID:       uuid.MustParse(input.UserID),
+		LoanPersonID: uuid.MustParse(input.LoanPersonID),
+		IsDebt:       *input.IsDebt,
+		LoanDate:     loanDate,
+		LoanAmount:   input.LoanAmount,
 	}
 
 	return s.repository.CreateLoan(newLoan)
+}
+
+// 借金を削除する関数の定義
+func (s *LoanService) DeleteLoan(userId string, personName string, isDebt *bool) error {
+	return s.repository.DeleteLoan(userId, personName, *isDebt)
 }
