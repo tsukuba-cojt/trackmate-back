@@ -9,7 +9,7 @@ import (
 
 // 支出のモデルの定義
 type Expense struct {
-	ExpenseID         uuid.UUID `gorm:"type:char(36);primaryKey"`
+	ExpenseID         uuid.UUID `gorm:"type:char(36);primaryKey;unique"`
 	UserID            uuid.UUID `gorm:"not null;foreignKey:UserID"`
 	ExpenseCategoryID uuid.UUID `gorm:"not null;foreignKey:ExpenseCategoryID"`
 	ExpenseDate       time.Time

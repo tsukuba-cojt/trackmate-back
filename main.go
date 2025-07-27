@@ -18,11 +18,6 @@ func main() {
 	infra.Initialize()
 	db := infra.SetupDB()
 
-	// 支出のリポジトリ、サービス、コントローラーの初期化
-	expenseRepositoty := repositories.NewExpenseRepository(db)
-	expenseService := services.NewExpenseService(expenseRepositoty)
-	expenseController := controllers.NewExpenseController(expenseService)
-
 	// 支出カテゴリのリポジトリ、サービス、コントローラーの初期化
 	expenseCategoryRepository := repositories.NewExpenseCategoryRepository(db)
 	expenseCategoryService := services.NewExpenseCategoryService(expenseCategoryRepository)
@@ -43,6 +38,12 @@ func main() {
 	budgetService := services.NewBudgetService(budgetRepository)
 	budgetController := controllers.NewBudgetController(budgetService)
 
+	// 支出のリポジトリ、サービス、コントローラーの初期化
+	expenseRepository := repositories.NewExpenseRepository(db)
+	expenseService := services.NewExpenseService(expenseRepository)
+	summaryFacade := services.NewSummaryFacade(expenseRepository, budgetRepository, loanRepository)
+	expenseController := controllers.NewExpenseController(expenseService, summaryFacade)
+
 	// 認証のリポジトリ、サービス、コントローラーの初期化
 	authRepository := repositories.NewAuthRepository(db)
 	authService := services.NewAuthService(authRepository)
@@ -61,8 +62,9 @@ func main() {
 
 	// 支出のルーティング
 	expenseRouterWithAuth := r.Group("/expenses", middlewares.AuthMiddleware(authService))
-	expenseRouterWithAuth.GET("", expenseController.FindAllExpense)
+	expenseRouterWithAuth.GET("", expenseController.GetExpenseSummary)
 	expenseRouterWithAuth.POST("", expenseController.CreateExpense)
+	expenseRouterWithAuth.DELETE("", expenseController.DeleteExpense)
 
 	// 支出カテゴリのルーティング
 	expenseCategoryRouterWithAuth := r.Group("/categories", middlewares.AuthMiddleware(authService))
