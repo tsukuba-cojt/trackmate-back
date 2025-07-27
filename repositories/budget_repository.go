@@ -3,12 +3,14 @@ package repositories
 import (
 	"errors"
 	"myapp/models"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 // インターフェースの定義
 type IBudgetRepository interface {
+	FindBudgetByUserID(userId string, date time.Time) (int, error)
 	CreateBudget(input models.Budget) error
 }
 
@@ -20,6 +22,19 @@ type BudgetRepository struct {
 // コンストラクタの定義
 func NewBudgetRepository(db *gorm.DB) IBudgetRepository {
 	return &BudgetRepository{db: db}
+}
+
+// ユーザーIDに紐づく予算を取得する関数の定義
+func (r *BudgetRepository) FindBudgetByUserID(userId string, date time.Time) (int, error) {
+	var budget int
+	result := r.db.Table("budgets").
+		Select("COALESCE(amount, 0)").
+		Where("user_id = ? AND date = ?", userId, date).
+		Scan(&budget)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return budget, nil
 }
 
 // 予算を作成する関数の定義

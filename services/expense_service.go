@@ -1,18 +1,21 @@
 package services
 
 import (
+	"errors"
+	"fmt"
+	"time"
+
 	"myapp/dto"
 	"myapp/models"
 	"myapp/repositories"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 // インターフェースの定義
 type IExpenseService interface {
-	FindAllExpense(userId string) (*[]models.Expense, error)
 	CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error)
+	DeleteExpense(userId string, expenseId string) error
 }
 
 // サービスの定義
@@ -25,27 +28,51 @@ func NewExpenseService(repository repositories.IExpenseRepository) IExpenseServi
 	return &ExpenseService{repository: repository}
 }
 
-// ユーザーごとの全ての支出を取得する関数の定義
-func (s *ExpenseService) FindAllExpense(userId string) (*[]models.Expense, error) {
-	return s.repository.FindAllExpense(userId)
-}
-
-// 支出を作成する関数の定義
+// CreateExpense はサービス層でリポジトリに委譲するメソッド
 func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Expense, error) {
-	newExpenseID := uuid.New()
-	expenseDate, err := time.Parse("2006-01-02", input.ExpenseDate)
+	// string UserID を uuid.UUID に変換
+	userID, err := uuid.Parse(input.UserID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("invalid UserID format")
 	}
 
+	// string ExpenseCategoryID を uuid.UUID に変換
+	expenseCategoryID, err := uuid.Parse(input.ExpenseCategoryID)
+	if err != nil {
+		return nil, errors.New("invalid ExpenseCategoryID format")
+	}
+
+	// ExpenseDate (string) を time.Time に変換
+	parsedDate, err := time.Parse("2006-01-02", input.ExpenseDate)
+	if err != nil {
+		return nil, errors.New("invalid expense date format")
+	}
+
+	expenseId := uuid.New()
+
 	newExpense := models.Expense{
-		ExpenseID:         newExpenseID,
-		UserID:            uuid.MustParse(input.UserID),
-		ExpenseCategoryID: uuid.MustParse(input.ExpenseCategoryID),
-		ExpenseDate:       expenseDate,
+		ExpenseID:         expenseId,
+		UserID:            userID,
+		ExpenseCategoryID: expenseCategoryID,
+		ExpenseDate:       parsedDate,
 		ExpenseAmount:     input.ExpenseAmount,
 		Description:       input.Description,
 	}
 
-	return s.repository.CreateExpense(newExpense)
+	fmt.Println(expenseId)
+
+	createdExpense, err := s.repository.CreateExpense(newExpense)
+	if err != nil {
+		return nil, err
+	}
+	return createdExpense, nil
+}
+
+// DeleteExpense はサービス層でリポジトリに委譲するメソッド
+func (s *ExpenseService) DeleteExpense(userId string, expenseId string) error {
+	err := s.repository.DeleteExpense(userId, expenseId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
