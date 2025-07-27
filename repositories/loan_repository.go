@@ -14,6 +14,8 @@ type ILoanRepository interface {
 	CreateLoan(newLoan models.Loan) error
 	DeleteLoan(userId string, personName string, isDebt bool) error
 	FindLoan(userId string, userName string, isDebt bool) error
+	GetDebtByUserID(userId string) (int, error)
+	GetLoanByUserID(userId string) (int, error)
 }
 
 // リポジトリの定義
@@ -102,4 +104,28 @@ func (r *LoanRepository) FindLoan(userId string, userName string, isDebt bool) e
 		return result.Error
 	}
 	return nil
+}
+
+func (r *LoanRepository) GetDebtByUserID(userId string) (int, error) {
+	var debt int
+	result := r.db.Table("loans").
+		Where("user_id = ? AND is_debt = ? AND deleted_at IS NULL", userId, true).
+		Select("SUM(loan_amount)").
+		Scan(&debt)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return debt, nil
+}
+
+func (r *LoanRepository) GetLoanByUserID(userId string) (int, error) {
+	var loan int
+	result := r.db.Table("loans").
+		Where("user_id = ? AND is_debt = ? AND deleted_at IS NULL", userId, false).
+		Select("SUM(loan_amount)").
+		Scan(&loan)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return loan, nil
 }

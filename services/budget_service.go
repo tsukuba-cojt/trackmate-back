@@ -31,11 +31,16 @@ func (s *BudgetService) CreateBudget(input dto.CreateBudgetInput) error {
 	if err != nil {
 		return err
 	}
+
+	// 月の1日に変換し、UTCタイムゾーンで統一
+	year, month, _ := budgetDate.Date()
+	budgetDate = time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+
 	newBudget := models.Budget{
 		BudgetID: newBudgetID,
 		UserID:   uuid.MustParse(input.UserID),
 		Amount:   uint(input.Budget),
-		Date:     budgetDate,
+		Date:     budgetDate, // UTCで保存
 	}
 	return s.repository.CreateBudget(newBudget)
 }

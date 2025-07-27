@@ -2,20 +2,18 @@ package repositories
 
 import (
 	"errors"
+	"myapp/dto"
 	"myapp/models"
 	"time"
-	
+
 	"gorm.io/gorm"
 )
 
 // インターフェースの定義
 type IExpenseRepository interface {
-	FindAllExpense(userId string) (*[]models.Expense, error)
+	GetExpenseSum(userId string, startDate, endDate time.Time) (int, error)
+	GetExpenseSummaryByDate(userId string, startDate, endDate time.Time) (*[]dto.ExpenseSummaryByDate, error)
 	CreateExpense(expense models.Expense) (*models.Expense, error)
-	FindExpensesByUserIDAndDateRange(userId string, startDate, endDate time.Time) ([]models.Expense, error)
-	FindBudgetByUserID(userId string) (*models.Budget, error)
-	FindDebtsByUserID(userId string) ([]models.Debt, error)
-	FindLoansByUserID(userId string) ([]models.Loan, error)
 	DeleteExpense(userId string, expenseId string) error
 }
 
@@ -29,17 +27,31 @@ func NewExpenseRepository(db *gorm.DB) IExpenseRepository {
 	return &ExpenseRepository{db: db}
 }
 
-// ユーザーごとの全ての支出を取得する関数の定義
-func (r *ExpenseRepository) FindAllExpense(userId string) (*[]models.Expense, error) {
-	var expense []models.Expense
-	result := r.db.Find(&expense, "user_id = ?", userId)
+// ユーザーIDと日付範囲で支出の合計金額を取得する関数の定義
+func (r *ExpenseRepository) GetExpenseSum(userId string, startDate, endDate time.Time) (int, error) {
+	var sum int
+	result := r.db.Table("expenses").
+		Where("user_id = ? AND expense_date BETWEEN ? AND ? AND deleted_at IS NULL", userId, startDate, endDate).
+		Select("SUM(expense_amount)").
+		Scan(&sum)
 	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return &[]models.Expense{}, nil
-		}
+		return 0, result.Error
+	}
+	return sum, nil
+}
+
+// ユーザーIDと日付範囲で支出のサマリーを取得する関数の定義
+func (r *ExpenseRepository) GetExpenseSummaryByDate(userId string, startDate, endDate time.Time) (*[]dto.ExpenseSummaryByDate, error) {
+	var summary []dto.ExpenseSummaryByDate
+	result := r.db.Table("expenses").
+		Select("expenses.expense_id, expenses.expense_amount, expense_categories.expense_category_name").
+		Joins("JOIN expense_categories ON expenses.expense_category_id = expense_categories.expense_category_id").
+		Where("expenses.user_id = ? AND expenses.expense_date BETWEEN ? AND ? AND expenses.deleted_at IS NULL", userId, startDate, endDate).
+		Scan(&summary)
+	if result.Error != nil {
 		return nil, result.Error
 	}
-	return &expense, nil
+	return &summary, nil
 }
 
 // 支出を作成する関数の定義
@@ -49,61 +61,6 @@ func (r *ExpenseRepository) CreateExpense(newExpense models.Expense) (*models.Ex
 		return nil, result.Error
 	}
 	return &newExpense, nil
-}
-
-// ユーザーIDと日付範囲で支出を取得する関数の定義
-func (r *ExpenseRepository) FindExpensesByUserIDAndDateRange(userId string, startDate, endDate time.Time) ([]models.Expense, error) {
-	var expenses []models.Expense
-	result := r.db.
-		Where("user_id = ?", userId).
-		Where("expense_date >= ? AND expense_date < ?", startDate, endDate).
-		Find(&expenses)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return []models.Expense{}, nil
-		}
-		return nil, result.Error
-	}
-	return expenses, nil
-}
-
-// ユーザーの予算を取得する関数の定義
-func (r *ExpenseRepository) FindBudgetByUserID(userId string) (*models.Budget, error) {
-	var budget models.Budget
-	result := r.db.Where("user_id = ?", userId).First(&budget)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
-		return nil, result.Error
-	}
-	return &budget, nil
-}
-
-// ユーザーの負債を取得する関数の定義
-func (r *ExpenseRepository) FindDebtsByUserID(userId string) ([]models.Debt, error) {
-	var debts []models.Debt
-	result := r.db.Where("user_id = ?", userId).Find(&debts)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return []models.Debt{}, nil
-		}
-		return nil, result.Error
-	}
-	return debts, nil
-}
-
-// ユーザーの貸付を取得する関数の定義
-func (r *ExpenseRepository) FindLoansByUserID(userId string) ([]models.Loan, error) {
-	var loans []models.Loan
-	result := r.db.Where("user_id = ?", userId).Find(&loans)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return []models.Loan{}, nil // 見つからない場合は空のスライスを返す
-		}
-		return nil, result.Error
-	}
-	return loans, nil
 }
 
 // 支出を削除する関数の定義
