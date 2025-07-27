@@ -31,8 +31,8 @@ func NewExpenseRepository(db *gorm.DB) IExpenseRepository {
 func (r *ExpenseRepository) GetExpenseSum(userId string, startDate, endDate time.Time) (int, error) {
 	var sum int
 	result := r.db.Table("expenses").
+		Select("COALESCE(SUM(expense_amount), 0)").
 		Where("user_id = ? AND expense_date BETWEEN ? AND ? AND deleted_at IS NULL", userId, startDate, endDate).
-		Select("SUM(expense_amount)").
 		Scan(&sum)
 	if result.Error != nil {
 		return 0, result.Error
@@ -44,7 +44,7 @@ func (r *ExpenseRepository) GetExpenseSum(userId string, startDate, endDate time
 func (r *ExpenseRepository) GetExpenseSummaryByDate(userId string, startDate, endDate time.Time) (*[]dto.ExpenseSummaryByDate, error) {
 	var summary []dto.ExpenseSummaryByDate
 	result := r.db.Table("expenses").
-		Select("expenses.expense_id, expenses.expense_amount, expense_categories.expense_category_name").
+		Select("expenses.expense_id as expense_id, expenses.expense_amount as expense_amount, expense_categories.expense_category_name as category_name").
 		Joins("JOIN expense_categories ON expenses.expense_category_id = expense_categories.expense_category_id").
 		Where("expenses.user_id = ? AND expenses.expense_date BETWEEN ? AND ? AND expenses.deleted_at IS NULL", userId, startDate, endDate).
 		Scan(&summary)

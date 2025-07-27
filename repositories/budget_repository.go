@@ -26,13 +26,15 @@ func NewBudgetRepository(db *gorm.DB) IBudgetRepository {
 
 // ユーザーIDに紐づく予算を取得する関数の定義
 func (r *BudgetRepository) FindBudgetByUserID(userId string, date time.Time) (int, error) {
-	var budget models.Budget
-	result := r.db.First(&budget, "user_id = ? AND date = ?", userId, date)
+	var budget int
+	result := r.db.Table("budgets").
+		Select("COALESCE(amount, 0)").
+		Where("user_id = ? AND date = ?", userId, date).
+		Scan(&budget)
 	if result.Error != nil {
 		return 0, result.Error
 	}
-	budgetAmount := int(budget.Amount)
-	return budgetAmount, nil
+	return budget, nil
 }
 
 // 予算を作成する関数の定義

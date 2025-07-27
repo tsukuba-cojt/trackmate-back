@@ -110,11 +110,12 @@ func (r *LoanRepository) GetDebtByUserID(userId string) (int, error) {
 	var debt int
 	result := r.db.Table("loans").
 		Where("user_id = ? AND is_debt = ? AND deleted_at IS NULL", userId, true).
-		Select("SUM(loan_amount)").
+		Select("COALESCE(SUM(loan_amount), 0)").
 		Scan(&debt)
 	if result.Error != nil {
 		return 0, result.Error
 	}
+
 	return debt, nil
 }
 
@@ -122,7 +123,7 @@ func (r *LoanRepository) GetLoanByUserID(userId string) (int, error) {
 	var loan int
 	result := r.db.Table("loans").
 		Where("user_id = ? AND is_debt = ? AND deleted_at IS NULL", userId, false).
-		Select("SUM(loan_amount)").
+		Select("COALESCE(SUM(loan_amount), 0)").
 		Scan(&loan)
 	if result.Error != nil {
 		return 0, result.Error
