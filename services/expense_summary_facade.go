@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"myapp/dto"
 	"myapp/repositories"
 	"time"
@@ -35,7 +34,6 @@ func NewSummaryFacade(
 
 // GetExpenseSummary は複数のリポジトリからデータを取得して統合する
 func (f *SummaryFacade) GetExpenseSummary(userId string) (*dto.ExpenseSummary, error) {
-	fmt.Println("GetExpenseSummary")
 	// 今月の期間を計算
 	now := time.Now()
 	currentYear, currentMonth, _ := now.Date()
@@ -80,7 +78,6 @@ func (f *SummaryFacade) GetExpenseSummary(userId string) (*dto.ExpenseSummary, e
 
 // GetExpenseSummaryByDate は特定日付の支出サマリーを取得
 func (f *SummaryFacade) GetExpenseSummaryByDate(userId string, date string) (*[]dto.ExpenseSummaryByDate, error) {
-	fmt.Println("GetExpenseSummaryByDate")
 	// 日付をパース
 	parsedDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
