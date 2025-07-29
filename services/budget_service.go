@@ -32,9 +32,9 @@ func (s *BudgetService) CreateBudget(input dto.CreateBudgetInput) error {
 		return err
 	}
 
-	// 月の1日に変換し、UTCタイムゾーンで統一
+	// 月の1日に変換し、JSTタイムゾーンで統一
 	year, month, _ := budgetDate.Date()
-	budgetDate = time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+	budgetDate = time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
 
 	newBudget := models.Budget{
 		BudgetID: newBudgetID,

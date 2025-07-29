@@ -50,10 +50,11 @@ func main() {
 	authController := controllers.NewAuthController(authService)
 
 	// ルーターの初期化
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3400"}, // フロントエンドのURLを明示的に許可
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowOrigins:     []string{"http://astalum.dev/trackmate"}, // フロントエンドのURLを明示的に許可
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Authorization", "Content-Type"},
 		ExposeHeaders:    []string{"Authorization"},
 		AllowCredentials: true,

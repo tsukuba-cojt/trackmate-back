@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"myapp/dto"
@@ -41,11 +42,13 @@ func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Ex
 		return nil, errors.New("invalid ExpenseCategoryID format")
 	}
 
-	// ExpenseDate (string) を time.Time に変換
-	parsedDate, err := time.Parse("2006-01-02", input.ExpenseDate)
+	// ExpenseDate (string) を time.Time に変換（JSTで統一）
+	parsedDate, err := time.ParseInLocation("2006-01-02", input.ExpenseDate, time.Local)
 	if err != nil {
 		return nil, errors.New("invalid expense date format")
 	}
+	// 日付のみの場合は、時刻を00:00:00 JSTに設定
+	parsedDate = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.Local)
 
 	expenseId := uuid.New()
 
@@ -57,6 +60,8 @@ func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Ex
 		ExpenseAmount:     input.ExpenseAmount,
 		Description:       input.Description,
 	}
+
+	fmt.Println(expenseId)
 
 	createdExpense, err := s.repository.CreateExpense(newExpense)
 	if err != nil {

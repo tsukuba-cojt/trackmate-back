@@ -9,7 +9,6 @@ type CreateExpenseCategoryInput struct {
 type ExpenseCategorySummaryResponse struct {
 	CategoryID   string `json:"category_id"`
 	CategoryName string `json:"category_name"`
-	Sum          int    `json:"sum"`
 }
 
 type DeleteExpenseCategoryInput struct {

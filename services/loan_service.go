@@ -34,10 +34,12 @@ func (s *LoanService) GetLoanSummary(userId string) (*[]dto.LoanSummaryResponse,
 // 借金を作成する関数の定義
 func (s *LoanService) CreateLoan(input dto.CreateLoanInput) error {
 	newDebtID := uuid.New()
-	loanDate, err := time.Parse("2006-01-02", input.LoanDate)
+	loanDate, err := time.ParseInLocation("2006-01-02", input.LoanDate, time.Local)
 	if err != nil {
 		return err
 	}
+	// 日付のみの場合は、時刻を00:00:00 JSTに設定
+	loanDate = time.Date(loanDate.Year(), loanDate.Month(), loanDate.Day(), 0, 0, 0, 0, time.Local)
 
 	newLoan := models.Loan{
 		LoanID:       newDebtID,

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"myapp/dto"
 	"myapp/repositories"
 	"time"
@@ -34,10 +35,11 @@ func NewSummaryFacade(
 
 // GetExpenseSummary は複数のリポジトリからデータを取得して統合する
 func (f *SummaryFacade) GetExpenseSummary(userId string) (*dto.ExpenseSummary, error) {
-	// 今月の期間を計算
+	fmt.Println("GetExpenseSummary")
+	// 今月の期間を計算（JSTで統一）
 	now := time.Now()
 	currentYear, currentMonth, _ := now.Date()
-	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.UTC)
+	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.Local)
 	firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
 
 	// 支出合計を取得
@@ -78,11 +80,14 @@ func (f *SummaryFacade) GetExpenseSummary(userId string) (*dto.ExpenseSummary, e
 
 // GetExpenseSummaryByDate は特定日付の支出サマリーを取得
 func (f *SummaryFacade) GetExpenseSummaryByDate(userId string, date string) (*[]dto.ExpenseSummaryByDate, error) {
-	// 日付をパース
-	parsedDate, err := time.Parse("2006-01-02", date)
+	fmt.Println("GetExpenseSummaryByDate")
+	// 日付をパース（JSTで統一）
+	parsedDate, err := time.ParseInLocation("2006-01-02", date, time.Local)
 	if err != nil {
 		return nil, err
 	}
+	// 日付のみの場合は、時刻を00:00:00 JSTに設定
+	parsedDate = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.Local)
 
 	// その日の支出データを取得（期間を1日に限定）
 	nextDay := parsedDate.AddDate(0, 0, 1)
