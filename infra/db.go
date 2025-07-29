@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 // データベースの設定・接続を行う関数の定義
@@ -26,9 +25,11 @@ func SetupDB() *gorm.DB {
 		log.Fatalf("failed to connect database: %v", err)
 	}
 
-	db = db.Session(&gorm.Session{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
+	/*
+		db = db.Session(&gorm.Session{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
+	*/
 
 	return db
 }
