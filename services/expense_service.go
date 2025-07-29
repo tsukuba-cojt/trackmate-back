@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"myapp/dto"
@@ -58,8 +57,6 @@ func (s *ExpenseService) CreateExpense(input dto.CreateExpenseInput) (*models.Ex
 		ExpenseAmount:     input.ExpenseAmount,
 		Description:       input.Description,
 	}
-
-	fmt.Println(expenseId)
 
 	createdExpense, err := s.repository.CreateExpense(newExpense)
 	if err != nil {
