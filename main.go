@@ -50,10 +50,10 @@ func main() {
 	authController := controllers.NewAuthController(authService)
 
 	// ルーターの初期化
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://astalum.dev/trackmate"}, // フロントエンドのURLを明示的に許可
+		AllowOrigins:     []string{"http://mast23mc.net"}, // フロントエンドのURLを明示的に許可
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Authorization", "Content-Type"},
 		ExposeHeaders:    []string{"Authorization"},
@@ -61,36 +61,38 @@ func main() {
 		MaxAge:           12 * time.Hour, // プリフライトリクエストをキャッシュ
 	}))
 
+	api := r.Group("/api")
+
 	// 支出のルーティング
-	expenseRouterWithAuth := r.Group("/expenses", middlewares.AuthMiddleware(authService))
+	expenseRouterWithAuth := api.Group("/expenses", middlewares.AuthMiddleware(authService))
 	expenseRouterWithAuth.GET("", expenseController.GetExpenseSummary)
 	expenseRouterWithAuth.POST("", expenseController.CreateExpense)
 	expenseRouterWithAuth.DELETE("", expenseController.DeleteExpense)
 
 	// 支出カテゴリのルーティング
-	expenseCategoryRouterWithAuth := r.Group("/categories", middlewares.AuthMiddleware(authService))
+	expenseCategoryRouterWithAuth := api.Group("/categories", middlewares.AuthMiddleware(authService))
 	expenseCategoryRouterWithAuth.GET("", expenseCategoryController.GetExpenseCategorySummary)
 	expenseCategoryRouterWithAuth.POST("", expenseCategoryController.CreateExpenseCategory)
 	expenseCategoryRouterWithAuth.DELETE("", expenseCategoryController.DeleteExpenseCategory)
 
 	// 借金のルーティング
-	loanRouterWithAuth := r.Group("/loan", middlewares.AuthMiddleware(authService))
+	loanRouterWithAuth := api.Group("/loan", middlewares.AuthMiddleware(authService))
 	loanRouterWithAuth.GET("", loanController.GetLoanSummary)
 	loanRouterWithAuth.POST("", loanController.CreateLoan)
 	loanRouterWithAuth.DELETE("", loanController.DeleteLoan)
 
 	// 借金の人のルーティング
-	loanPersonRouterWithAuth := r.Group("/person", middlewares.AuthMiddleware(authService))
+	loanPersonRouterWithAuth := api.Group("/person", middlewares.AuthMiddleware(authService))
 	loanPersonRouterWithAuth.GET("", loanPersonController.FindAllLoanPerson)
 	loanPersonRouterWithAuth.POST("", loanPersonController.CreateLoanPerson)
 	loanPersonRouterWithAuth.DELETE("", loanPersonController.DeleteLoanPerson)
 
 	// 予算のルーティング
-	budgetRouterWithAuth := r.Group("/budget", middlewares.AuthMiddleware(authService))
+	budgetRouterWithAuth := api.Group("/budget", middlewares.AuthMiddleware(authService))
 	budgetRouterWithAuth.POST("", budgetController.CreateBudget)
 
 	// 認証のルーティング
-	authRouter := r.Group("/auth")
+	authRouter := api.Group("/auth")
 	authRouter.POST("/signup", authController.Signup)
 	authRouter.POST("/login", authController.Login)
 
